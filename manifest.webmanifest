@@ -1,0 +1,17 @@
+{
+  "name": "Control Gastos",
+  "short_name": "Control Gastos",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#eef2f5",
+  "theme_color": "#123b6d",
+  "lang": "es-ES",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

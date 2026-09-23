@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#123b6d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Control Gastos">
+<title>Control Gastos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="phone">
+<header class="topbar">
+  <div class="brand">
+    <button id="planBtn" class="icon-btn" aria-label="Configurar presupuesto">⚙︎</button>
+    <div>
+      <div class="eyebrow">CONTROL PERSONAL</div>
+      <div class="title">Gastos</div>
+    </div>
+  </div>
+  <button id="exportBtn" class="icon-btn export" aria-label="Exportar gastos">⇩</button>
+</header>
+
+<main>
+<section class="plan-card">
+  <div class="plan-title">Presupuesto diario</div>
+  <div class="plan-main">
+    <div><span id="dailyBudget" class="daily-budget">0,00 €</span><span class="muted"> / día</span></div>
+    <div id="pace" class="pace"><span class="pace-dot">●</span><span>En ritmo</span></div>
+  </div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div id="remaining" class="remaining">Te quedan 0,00 €</div>
+  <div id="budgetInfo" class="budget-info">Configura tu presupuesto y las fechas.</div>
+</section>
+
+<section class="quick">
+  <div class="stat"><span>HOY</span><strong id="today">0,00 €</strong></div>
+  <div class="stat"><span>MEDIA / DÍA</span><strong id="average">0,00 €</strong></div>
+  <div class="stat"><span>TOTAL</span><strong id="total">0,00 €</strong></div>
+</section>
+
+<section class="category-card">
+  <div class="section-title">GASTOS POR CATEGORÍA</div>
+  <div id="categories"></div>
+</section>
+
+<section>
+  <div class="section-title list-heading">MOVIMIENTOS</div>
+  <div id="expenses"></div>
+  <div id="empty" class="empty">Todavía no hay gastos.</div>
+</section>
+</main>
+
+<button id="newExpenseBtn" class="new-expense" aria-label="Añadir gasto"><span>＋</span> NUEVO GASTO</button>
+
+<dialog id="expenseDialog"><form method="dialog" id="expenseForm">
+<h2 id="expenseDialogTitle">Registrar gasto</h2>
+<label>Categoría<select id="concept"><option>Desayuno</option><option>Comida</option><option>Cena</option><option>Dormir</option><option>Otros</option></select></label>
+<label>Importe (€)<input id="amount" inputmode="decimal" required></label>
+<label>Comentario<input id="comment"></label>
+<label>Fecha<input id="expenseDate" type="date" required></label>
+<div class="dialog-actions"><button type="button" class="secondary" data-close="expenseDialog">Cancelar</button><button class="primary">Guardar</button></div>
+</form></dialog>
+
+<dialog id="planDialog"><form method="dialog" id="planForm">
+<h2>Control de gastos</h2>
+<label>Presupuesto total (€)<input id="budget" inputmode="decimal" required></label>
+<div class="two-cols"><label>Desde<input id="startDate" type="date"></label><label>Hasta<input id="endDate" type="date"></label></div>
+<p class="help">Cada día se calcula un nuevo presupuesto con lo que queda y los días restantes. Ese importe queda fijo durante todo el día.</p>
+<div class="dialog-actions"><button type="button" class="secondary" data-close="planDialog">Cancelar</button><button type="button" id="resetPlan" class="danger">Restablecer</button><button class="primary">Guardar</button></div>
+</form></dialog>
+
+<dialog id="categoryDialog"><div>
+<h2 id="categoryTitle"></h2><div class="category-head"><span>Detalle</span><span>Importe</span></div><div id="categoryRows"></div>
+<button class="primary close-cat" data-close="categoryDialog">Cerrar</button>
+</div></dialog>
+<script src="app.js"></script>
+<script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script>
+</div>
+</body>
+</html>
