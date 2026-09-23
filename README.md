@@ -8,6 +8,6 @@ Aplicación web/PWA diseñada específicamente para móvil.
 - Funciona offline después de la primera carga.
 - Se puede añadir a la pantalla de inicio del iPhone/Android.
 - Presupuesto diario dinámico y congelado durante cada día.
-- Exportación CSV para Excel.
+- Exportación CSV para un Excel.
 
 Publicación: subir estos archivos al repositorio y activar GitHub Pages desde `main` / raíz.
