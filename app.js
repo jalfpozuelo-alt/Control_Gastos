@@ -82,18 +82,41 @@ function renderExpenses(){
       <div class="expense-main"><div class="expense-title">${e.concept.toUpperCase()}</div>
       <div class="expense-sub">${dateEs(e.date)}${e.comment?" · "+escapeHtml(e.comment):""}</div></div>
       <span class="expense-amount">${money(e.amount)}</span>
-      <button class="menu" title="Opciones">⋮</button>`;
-    row.querySelector(".menu").onclick=()=>menuExpense(e);
+      <button class="expense-delete" type="button" aria-label="Borrar movimiento">BORRAR</button>`;
     row.querySelector(".expense-main").onclick=()=>openExpense(e);
+    const del=row.querySelector(".expense-delete");
+    del.onclick=()=>deleteExpense(e);
+    enableSwipeDelete(row,e);
     box.appendChild(row);
   });
   empty.style.display=state.expenses.length?"none":"block";
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function menuExpense(e){
-  const action=prompt("Escribe: editar o borrar","editar");
-  if(action==="editar")openExpense(e);
-  if(action==="borrar"&&confirm("¿Borrar este gasto?")){state.expenses=state.expenses.filter(x=>x.id!==e.id);save();render()}
+function deleteExpense(e){
+  if(confirm("¿Borrar este movimiento?")){state.expenses=state.expenses.filter(x=>x.id!==e.id);save();render()}
+}
+function enableSwipeDelete(row,e){
+  let startX=0,startY=0,dx=0,tracking=false;
+  const reveal=88;
+  row.addEventListener("touchstart",ev=>{
+    if(!ev.touches.length)return;
+    startX=ev.touches[0].clientX;startY=ev.touches[0].clientY;dx=0;tracking=true;row.classList.add("swiping");
+  },{passive:true});
+  row.addEventListener("touchmove",ev=>{
+    if(!tracking||!ev.touches.length)return;
+    const x=ev.touches[0].clientX,y=ev.touches[0].clientY;
+    const diffX=x-startX,diffY=y-startY;
+    if(Math.abs(diffY)>Math.abs(diffX)+8){tracking=false;row.classList.remove("swiping");row.style.transform="translateX(0)";return}
+    dx=Math.max(-reveal,Math.min(0,diffX));
+    if(diffX<0)row.style.transform=`translateX(${dx}px)`;
+  },{passive:true});
+  row.addEventListener("touchend",()=>{
+    if(!tracking)return;
+    tracking=false;row.classList.remove("swiping");
+    if(dx<-40)row.style.transform=`translateX(-${reveal}px)`;else row.style.transform="translateX(0)";
+    dx=0;
+  });
+  row.addEventListener("touchcancel",()=>{tracking=false;row.classList.remove("swiping");row.style.transform="translateX(0)"});
 }
 function openExpense(e=null){
   editingId=e?.id||null;
