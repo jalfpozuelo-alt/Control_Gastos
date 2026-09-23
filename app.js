@@ -71,15 +71,8 @@ function render(){
     : "Configura tu presupuesto y las fechas del Camino.";
   renderCategories();renderExpenses();
 }
-function renderCategories(){
-  const box=document.getElementById("categories");box.innerHTML="";
-  concepts.forEach(c=>{
-    const sum=state.expenses.filter(e=>e.concept===c).reduce((a,e)=>a+e.amount,0);
-    const b=document.createElement("button");b.className="category-row";
-    b.innerHTML=`<span class="emoji">${emojis[c]}</span><span class="name">${c}</span><span class="value">${money(sum)}</span>`;
-    b.onclick=()=>showCategory(c);box.appendChild(b);
-  });
-}
+function renderCategories(){const box=document.getElementById("categories");if(box)box.innerHTML="";}
+function openCategories(){const box=document.getElementById("categorySummaryRows");box.innerHTML="";concepts.forEach(c=>{const sum=state.expenses.filter(e=>e.concept===c).reduce((a,e)=>a+e.amount,0);const b=document.createElement("button");b.className="category-modal-row";b.innerHTML=`<span class="emoji">${emojis[c]}</span><span class="name">${c}</span><span class="value">${money(sum)}</span><span class="arrow">›</span>`;b.onclick=()=>showCategory(c);box.appendChild(b)});document.getElementById("categoryDialog").showModal();}
 function renderExpenses(){
   const box=document.getElementById("expenses"),empty=document.getElementById("empty");
   box.innerHTML="";
@@ -113,18 +106,7 @@ function openExpense(e=null){
   if(state.plan.end)document.getElementById("expenseDate").max=state.plan.end;
   document.getElementById("expenseDialog").showModal();
 }
-function showCategory(c){
-  const rows=state.expenses.filter(e=>e.concept===c).sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById("categoryTitle").textContent=`${emojis[c]}  ${c}`;
-  const box=document.getElementById("categoryRows");box.innerHTML="";
-  if(!rows.length)box.innerHTML='<div class="empty">No hay gastos en esta categoría.</div>';
-  rows.forEach(e=>{
-    const r=document.createElement("div");r.className="cat-row";
-    r.innerHTML=`<span>${escapeHtml(e.comment)||dateEs(e.date)}${e.comment?" · "+dateEs(e.date):""}</span><strong>${money(e.amount)}</strong>`;
-    box.appendChild(r);
-  });
-  document.getElementById("categoryDialog").showModal();
-}
+function showCategory(c){const rows=state.expenses.filter(e=>e.concept===c).sort((a,b)=>b.date.localeCompare(a.date));document.getElementById("categoryTitle").textContent=`${emojis[c]}  ${c}`;const box=document.getElementById("categoryRows");box.innerHTML="";if(!rows.length)box.innerHTML='<div class="empty">No hay gastos en esta categoría.</div>';rows.forEach(e=>{const r=document.createElement("div");r.className="cat-row";r.innerHTML=`<div class="cat-detail"><span class="cat-date">${dateEs(e.date)}</span><span class="cat-comment">${escapeHtml(e.comment)||"—"}</span></div><strong>${money(e.amount)}</strong>`;box.appendChild(r)});document.getElementById("categoryDialog").close();document.getElementById("categoryDetailDialog").showModal();}
 function openPlan(){
   document.getElementById("budget").value=state.plan.budget?String(state.plan.budget).replace(".",","):"";
   document.getElementById("startDate").value=state.plan.start||"";
@@ -135,7 +117,7 @@ document.getElementById("newExpenseBtn").onclick=()=>{
   if(!state.plan.start||!state.plan.end){alert("Primero configura el presupuesto y las fechas del Camino.");openPlan();return}
   openExpense();
 };
-document.getElementById("planBtn").onclick=openPlan;
+document.getElementById("planBtn").onclick=openPlan;document.getElementById("categoriesBtn").onclick=openCategories;
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).close());
 
 document.getElementById("expenseForm").onsubmit=e=>{
