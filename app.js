@@ -96,10 +96,71 @@ function openExpense(e=null){
   editingId=e?.id||null;document.getElementById("expenseDialogTitle").textContent=e?"Editar gasto":"Registrar gasto";
   const conceptEl=document.getElementById("concept");
   const conceptPlaceholder=document.getElementById("conceptPlaceholder");
-  if(e?.concept){conceptEl.value=e.concept;conceptPlaceholder.hidden=true}else{conceptEl.selectedIndex=-1;conceptPlaceholder.hidden=false;}document.getElementById("amount").value=e?String(e.amount).replace(".",","):"";
-  document.getElementById("comment").value=e?.comment||"";document.getElementById("expenseDate").value=e?.date||isoDate();
+  if(e?.concept){conceptEl.value=e.concept;conceptPlaceholder.hidden=true}else{conceptEl.selectedIndex=-1;conceptPlaceholder.hidden=false;}
+  document.getElementById("amount").value=e?String(e.amount).replace(".",","):"";
+  document.getElementById("comment").value=e?.comment||"";
+  document.getElementById("location").value=e?.location||"";
+  document.getElementById("locationStatus").textContent="";
+  document.getElementById("expenseDate").value=e?.date||isoDate();
   if(state.plan.start)document.getElementById("expenseDate").min=state.plan.start;if(state.plan.end)document.getElementById("expenseDate").max=state.plan.end;
-  document.getElementById("expenseDialog").showModal();
+  const dialog=document.getElementById("expenseDialog");dialog.showModal();
+  requestAnimationFrame(()=>document.getElementById("expenseDialogTitle").focus({preventScroll:true}));
+}
+
+
+let locating=false;
+let locationTimer=null;
+let bestAccuracy=Infinity;
+let bestPosition=null;
+
+function setLocationStatus(text,working=false){
+  const el=document.getElementById("locationStatus");
+  el.textContent=text||"";
+  el.classList.toggle("working",!!working);
+}
+function localityFromReverseGeocode(data){
+  return data?.locality || data?.city || data?.town || data?.village || data?.municipality || data?.principalSubdivision || "";
+}
+async function reverseGeocode(lat,lon){
+  const url=`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=es`;
+  const r=await fetch(url,{headers:{Accept:"application/json"}});
+  if(!r.ok)throw new Error("No se pudo obtener la localidad");
+  return r.json();
+}
+function stopLocationWatch(){
+  locating=false;
+  if(locationTimer){clearTimeout(locationTimer);locationTimer=null;}
+  if(window._locationWatchId!=null){navigator.geolocation.clearWatch(window._locationWatchId);window._locationWatchId=null;}
+}
+async function acceptBestLocation(){
+  stopLocationWatch();
+  if(!bestPosition){setLocationStatus("No se ha conseguido una ubicación. Puedes reintentar o escribirla a mano.");return;}
+  if(bestAccuracy>10){setLocationStatus(`Precisión final ${Math.round(bestAccuracy)} m. No es suficiente; puedes reintentar o escribirla a mano.`);return;}
+  try{
+    setLocationStatus(`Precisión ${Math.round(bestAccuracy)} m · obteniendo localidad…`,true);
+    const data=await reverseGeocode(bestPosition.coords.latitude,bestPosition.coords.longitude);
+    const locality=localityFromReverseGeocode(data);
+    if(locality){document.getElementById("location").value=locality;setLocationStatus(`Localización obtenida · precisión ${Math.round(bestAccuracy)} m`);}
+    else setLocationStatus(`Precisión ${Math.round(bestAccuracy)} m, pero no se ha encontrado la localidad. Puedes escribirla a mano.`);
+  }catch{setLocationStatus(`Precisión ${Math.round(bestAccuracy)} m, pero no se ha podido obtener la localidad. Puedes escribirla a mano.`);}
+}
+function locateExpense(){
+  if(!navigator.geolocation){setLocationStatus("Este dispositivo no permite obtener la ubicación. Puedes escribirla a mano.");return;}
+  if(locating)return;
+  locating=true;bestAccuracy=Infinity;bestPosition=null;
+  const btn=document.getElementById("locateBtn");btn.classList.add("active");btn.textContent="…";
+  setLocationStatus("Buscando ubicación…",true);
+  locationTimer=setTimeout(()=>{if(locating)acceptBestLocation();},20000);
+  window._locationWatchId=navigator.geolocation.watchPosition(pos=>{
+    const accuracy=Number(pos.coords.accuracy||Infinity);
+    if(accuracy<bestAccuracy){bestAccuracy=accuracy;bestPosition=pos;setLocationStatus(`Buscando ubicación · precisión ${Math.round(accuracy)} m`,true);}
+    if(accuracy<=10)acceptBestLocation();
+  },err=>{
+    if(!locating)return;
+    stopLocationWatch();btn.classList.remove("active");btn.textContent="⌖";
+    const msg=err.code===1?"Permiso de ubicación denegado.":err.code===2?"No se ha podido obtener la ubicación.":"Se ha agotado el tiempo de búsqueda.";
+    setLocationStatus(`${msg} Puedes reintentar o escribirla a mano.`);
+  },{enableHighAccuracy:true,maximumAge:0,timeout:20000});
 }
 function showCategory(c){
   categoryReturn="summary";
@@ -116,6 +177,8 @@ function openPlan(){
   document.getElementById("planDialog").showModal();
 }
 document.getElementById("concept").addEventListener("change",()=>{document.getElementById("conceptPlaceholder").hidden=true});
+document.getElementById("locateBtn").onclick=locateExpense;
+document.getElementById("expenseDialog").addEventListener("close",()=>{stopLocationWatch();const b=document.getElementById("locateBtn");b.classList.remove("active");b.textContent="⌖";});
 
 document.getElementById("newExpenseBtn").onclick=()=>{if(!state.plan.start||!state.plan.end){alert("Primero configura el presupuesto y las fechas.");openPlan();return}openExpense()};
 document.getElementById("planBtn").onclick=openPlan;document.getElementById("categoriesBtn").onclick=openCategories;
@@ -125,7 +188,7 @@ document.getElementById("categoryBackBtn").onclick=()=>{document.getElementById(
 document.getElementById("expenseForm").onsubmit=e=>{
   e.preventDefault();const amount=parseAmount(document.getElementById("amount").value),date=document.getElementById("expenseDate").value;if(!amount||amount<=0||!date)return;
   if((state.plan.start&&date<state.plan.start)||(state.plan.end&&date>state.plan.end)){alert("La fecha está fuera del periodo.");return}
-  const item={id:editingId||crypto.randomUUID(),concept:document.getElementById("concept").value,comment:document.getElementById("comment").value.trim(),amount,date};
+  const item={id:editingId||crypto.randomUUID(),concept:document.getElementById("concept").value,comment:document.getElementById("comment").value.trim(),location:document.getElementById("location").value.trim(),amount,date};
   if(editingId)state.expenses=state.expenses.map(x=>x.id===editingId?item:x);else state.expenses.push(item);
   save();document.getElementById("expenseDialog").close();render();
 };
@@ -136,7 +199,7 @@ document.getElementById("planForm").onsubmit=e=>{
 };
 document.getElementById("resetPlan").onclick=()=>{if(confirm("¿Restablecer el plan y borrar todos los gastos?")){state={expenses:[],plan:{budget:0,start:null,end:null}};save();document.getElementById("planDialog").close();render()}};
 document.getElementById("exportBtn").onclick=()=>{
-  const rows=[["Fecha","Categoría","Comentario","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[dateEs(e.date),e.concept,e.comment,e.amount.toFixed(2)])];
+  const rows=[["Fecha","Categoría","Comentario","Localización","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[dateEs(e.date),e.concept,e.comment,e.location||"",e.amount.toFixed(2)])];
   const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\r\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="control_gastos.csv";a.click();URL.revokeObjectURL(a.href);
 };

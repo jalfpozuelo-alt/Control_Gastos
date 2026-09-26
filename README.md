@@ -1,14 +1,15 @@
-# Control Gastos v5
+# Control Gastos v7
 
 Versión móvil de Control Gastos.
 
 Cambios de esta versión:
-- Se elimina completamente el gráfico de «Gastos por categoría».
-- Las categorías quedan ordenadas de mayor a menor gasto.
-- En «Hoy», solo la zona blanca del importe cambia a verde o rojo; el resto de la tarjeta conserva el mismo aspecto que «Media / día» y «Total».
-- La etiqueta de ritmo dentro de «Presupuesto diario» mantiene su fondo neutro, sin colores.
-- Al crear un nuevo gasto, la categoría aparece inicialmente como «Elegir» y solo se selecciona al pulsarla.
-- Se mantiene «Supermercado».
-- Se mantienen el icono PWA renovado, la navegación de categorías y la cabecera azul opaca de iPhone.
-
-- Selector de categoría: «Elegir» es solo el texto inicial; no aparece como opción y el selector solo se abre al pulsar el campo.
+- El selector de categoría no recibe el foco al abrir «Nuevo gasto» y no se abre automáticamente.
+- «Elegir» es solo un indicador visual; el selector contiene únicamente las categorías reales.
+- El campo Fecha tiene la misma altura y estética que los demás campos.
+- Nuevo campo «Localización», opcional y editable manualmente.
+- Botón GPS con indicador visual y lectura de precisión en metros.
+- Busca con alta precisión durante un máximo de 20 segundos y acepta automáticamente una lectura de 10 m o mejor.
+- Si no alcanza esa precisión, permite reintentar o escribir la localidad a mano.
+- La localidad se obtiene mediante geocodificación inversa a partir de las coordenadas.
+- La localización se guarda con cada gasto y se incluye en la exportación CSV.
+- Se mantiene la clave localStorage existente para conservar los datos.

@@ -53,12 +53,13 @@
 <button id="newExpenseBtn" class="new-expense" aria-label="Añadir gasto"><span>＋</span> NUEVO GASTO</button>
 
 <dialog id="expenseDialog"><form method="dialog" id="expenseForm">
-<h2 id="expenseDialogTitle">Registrar gasto</h2>
+<h2 id="expenseDialogTitle" tabindex="-1">Registrar gasto</h2>
 <label>Categoría<div class="select-wrap"><select id="concept" required>
 <option>Desayuno</option><option>Comida</option><option>Cena</option><option>Dormir</option><option>Supermercado</option><option>Otros</option>
 </select><span id="conceptPlaceholder" class="select-placeholder">Elegir</span></div></label>
 <label>Importe (€)<input id="amount" inputmode="decimal" required></label>
 <label>Comentario<input id="comment"></label>
+<label>Localización<div class="location-wrap"><input id="location" autocomplete="address-level2" placeholder="Opcional"><button type="button" id="locateBtn" class="location-btn" aria-label="Obtener localización por GPS">⌖</button></div><div id="locationStatus" class="location-status" aria-live="polite"></div></label>
 <label>Fecha<input id="expenseDate" type="date" required></label>
 <div class="dialog-actions"><button type="button" class="secondary" data-close="expenseDialog">Cancelar</button><button class="primary">Guardar</button></div>
 </form></dialog>
