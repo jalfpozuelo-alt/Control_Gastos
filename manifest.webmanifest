@@ -1,6 +1,6 @@
 {
   "name": "Control Gastos",
-  "short_name": "Control Gastos",
+  "short_name": "Gastos",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#eef2f5",
