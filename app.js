@@ -94,7 +94,9 @@ function enableSwipeDelete(row,e){
 }
 function openExpense(e=null){
   editingId=e?.id||null;document.getElementById("expenseDialogTitle").textContent=e?"Editar gasto":"Registrar gasto";
-  document.getElementById("concept").value=e?.concept||"";document.getElementById("amount").value=e?String(e.amount).replace(".",","):"";
+  const conceptEl=document.getElementById("concept");
+  const conceptPlaceholder=document.getElementById("conceptPlaceholder");
+  if(e?.concept){conceptEl.value=e.concept;conceptPlaceholder.hidden=true}else{conceptEl.selectedIndex=-1;conceptPlaceholder.hidden=false;}document.getElementById("amount").value=e?String(e.amount).replace(".",","):"";
   document.getElementById("comment").value=e?.comment||"";document.getElementById("expenseDate").value=e?.date||isoDate();
   if(state.plan.start)document.getElementById("expenseDate").min=state.plan.start;if(state.plan.end)document.getElementById("expenseDate").max=state.plan.end;
   document.getElementById("expenseDialog").showModal();
@@ -113,6 +115,8 @@ function openPlan(){
   document.getElementById("startDate").value=state.plan.start||"";document.getElementById("endDate").value=state.plan.end||"";
   document.getElementById("planDialog").showModal();
 }
+document.getElementById("concept").addEventListener("change",()=>{document.getElementById("conceptPlaceholder").hidden=true});
+
 document.getElementById("newExpenseBtn").onclick=()=>{if(!state.plan.start||!state.plan.end){alert("Primero configura el presupuesto y las fechas.");openPlan();return}openExpense()};
 document.getElementById("planBtn").onclick=openPlan;document.getElementById("categoriesBtn").onclick=openCategories;
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).close());

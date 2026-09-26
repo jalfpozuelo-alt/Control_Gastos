@@ -10,3 +10,5 @@ Cambios de esta versión:
 - Al crear un nuevo gasto, la categoría aparece inicialmente como «Elegir» y solo se selecciona al pulsarla.
 - Se mantiene «Supermercado».
 - Se mantienen el icono PWA renovado, la navegación de categorías y la cabecera azul opaca de iPhone.
+
+- Selector de categoría: «Elegir» es solo el texto inicial; no aparece como opción y el selector solo se abre al pulsar el campo.
