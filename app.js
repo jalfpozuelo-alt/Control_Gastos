@@ -8,7 +8,7 @@ let categoryReturn="summary";
 function load(){
   try{
     const x=JSON.parse(localStorage.getItem(KEY)||"{}");
-    return {expenses:Array.isArray(x.expenses)?x.expenses:[],plan:{budget:Number(x.plan?.budget||0),start:x.plan?.start||null,end:x.plan?.end||null,title:x.plan?.title||""}};
+    return {expenses:Array.isArray(x.expenses)?x.expenses:[],plan:{budget:Number(x.plan?.budget||0),start:x.plan?.start||null,end:x.plan?.end||null,title:String(x.plan?.title||"").toUpperCase()}};
   }catch{return {expenses:[],plan:{budget:0,start:null,end:null,title:""}}}
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
@@ -170,7 +170,7 @@ function showCategory(c){
   document.getElementById("categoryTitle").textContent=`${emojis[c]}  ${c}`;
   const box=document.getElementById("categoryRows");box.innerHTML="";
   if(!rows.length)box.innerHTML='<div class="empty">No hay gastos en esta categoría.</div>';
-  rows.forEach(e=>{const r=document.createElement("div");r.className="cat-row";r.innerHTML=`<div class="cat-detail"><span class="cat-date">${dateEs(e.date)}</span><span class="cat-comment">${escapeHtml(e.comment)||"—"}</span></div><strong>${money(e.amount)}</strong>`;box.appendChild(r)});
+  rows.forEach(e=>{const r=document.createElement("div");r.className="cat-row";const details=[`Fecha: ${dateEs(e.date)}`,`Importe: ${money(e.amount)}`];if(e.comment)details.push(`Comentario: ${escapeHtml(e.comment)}`);if(e.location)details.push(`Localización: ${escapeHtml(e.location)}`);r.innerHTML=`<div class="cat-detail cat-detail-full">${details.map(x=>`<div>${x}</div>`).join("")}</div>`;box.appendChild(r)});
   document.getElementById("categoryDialog").close();document.getElementById("categoryDetailDialog").showModal();
 }
 function openPlan(){
@@ -196,14 +196,14 @@ document.getElementById("expenseForm").onsubmit=e=>{
   save();document.getElementById("expenseDialog").close();render();
 };
 document.getElementById("planForm").onsubmit=e=>{
-  e.preventDefault();const title=document.getElementById("planTitleInput").value.trim(),budget=parseAmount(document.getElementById("budget").value),start=document.getElementById("startDate").value,end=document.getElementById("endDate").value;
+  e.preventDefault();const title=document.getElementById("planTitleInput").value.trim().toUpperCase(),budget=parseAmount(document.getElementById("budget").value),start=document.getElementById("startDate").value,end=document.getElementById("endDate").value;
   if(!budget||budget<=0||!start||!end||end<start){alert("Revisa presupuesto y fechas.");return}
   state.plan={budget,start,end,title};save();document.getElementById("planDialog").close();render();
 };
 document.getElementById("resetPlan").onclick=()=>{if(confirm("¿Restablecer el plan y borrar todos los gastos?")){state={expenses:[],plan:{budget:0,start:null,end:null,title:""}};save();document.getElementById("planDialog").close();render()}};
 document.getElementById("exportBtn").onclick=()=>{
-  const rows=[["Fecha","Categoría","Comentario","Localización","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[dateEs(e.date),e.concept,e.comment,e.location||"",e.amount.toFixed(2)])];
+  const rows=[["Título del control","Fecha","Categoría","Comentario","Localización","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[state.plan.title||"",dateEs(e.date),e.concept,e.comment,e.location||"",e.amount.toFixed(2)])];
   const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\r\n");
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="control_gastos.csv";a.click();URL.revokeObjectURL(a.href);
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);const safeTitle=(state.plan.title||"control_gastos").replace(/[^A-Z0-9ÁÉÍÓÚÜÑ _-]/gi,"").trim().replace(/\s+/g,"_")||"control_gastos";a.download=`${safeTitle}.csv`;a.click();URL.revokeObjectURL(a.href);
 };
 render();

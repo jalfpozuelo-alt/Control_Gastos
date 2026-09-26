@@ -1,4 +1,4 @@
-# Control Gastos v8
+# Control Gastos v9
 
 Cambios de esta versión:
 - Cabecera principal con título configurable y «Control de gastos».
@@ -7,3 +7,7 @@ Cambios de esta versión:
 - Campos de fecha normalizados para que tengan la misma altura visual que los demás campos.
 - Fechas Desde/Hasta más compactas en configuración.
 - Se mantienen la localización GPS, selector de categoría sin apertura automática y el resto de funciones de la versión anterior.
+
+- Título del control convertido siempre a mayúsculas.
+- Detalle por categoría muestra fecha, importe, comentario y localización cuando existen.
+- Exportación incluye el título del control como columna y usa el título para nombrar el archivo.

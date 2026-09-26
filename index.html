@@ -66,7 +66,7 @@
 
 <dialog id="planDialog"><form method="dialog" id="planForm">
 <h2>Control de gastos</h2>
-<label>Título del control<input id="planTitleInput" type="text" placeholder="Ej.: Camino del Norte"></label>
+<label>Título del control<input id="planTitleInput" type="text" placeholder="Ej.: Camino del Norte" style="text-transform:uppercase" autocomplete="off"></label>
 <label>Presupuesto total (€)<input id="budget" inputmode="decimal" required></label>
 <div class="two-cols"><label>Desde<input id="startDate" type="date"></label><label>Hasta<input id="endDate" type="date"></label></div>
 <p class="help">Cada día se calcula un nuevo presupuesto con lo que queda y los días restantes. Ese importe queda fijo durante todo el día.</p>
