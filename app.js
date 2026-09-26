@@ -8,8 +8,8 @@ let categoryReturn="summary";
 function load(){
   try{
     const x=JSON.parse(localStorage.getItem(KEY)||"{}");
-    return {expenses:Array.isArray(x.expenses)?x.expenses:[],plan:x.plan||{budget:0,start:null,end:null}};
-  }catch{return {expenses:[],plan:{budget:0,start:null,end:null}}}
+    return {expenses:Array.isArray(x.expenses)?x.expenses:[],plan:{budget:Number(x.plan?.budget||0),start:x.plan?.start||null,end:x.plan?.end||null,title:x.plan?.title||""}};
+  }catch{return {expenses:[],plan:{budget:0,start:null,end:null,title:""}}}
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function money(n){return Number(n||0).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"}
@@ -44,6 +44,8 @@ function pace(){
   return ratio>1?["Por encima","high"]:["Por debajo","low"];
 }
 function render(){
+  document.getElementById("planTitle").textContent=state.plan.title||"";
+  document.getElementById("planTitle").style.display=state.plan.title?"block":"none";
   const todaySpent=dayExpenses(isoDate()),todayEl=document.getElementById("today"),todayStat=document.getElementById("todayStat");
   todayEl.textContent=money(todaySpent);
   todayStat.classList.remove("today-under","today-over");
@@ -172,6 +174,7 @@ function showCategory(c){
   document.getElementById("categoryDialog").close();document.getElementById("categoryDetailDialog").showModal();
 }
 function openPlan(){
+  document.getElementById("planTitleInput").value=state.plan.title||"";
   document.getElementById("budget").value=state.plan.budget?String(state.plan.budget).replace(".",","):"";
   document.getElementById("startDate").value=state.plan.start||"";document.getElementById("endDate").value=state.plan.end||"";
   document.getElementById("planDialog").showModal();
@@ -193,11 +196,11 @@ document.getElementById("expenseForm").onsubmit=e=>{
   save();document.getElementById("expenseDialog").close();render();
 };
 document.getElementById("planForm").onsubmit=e=>{
-  e.preventDefault();const budget=parseAmount(document.getElementById("budget").value),start=document.getElementById("startDate").value,end=document.getElementById("endDate").value;
+  e.preventDefault();const title=document.getElementById("planTitleInput").value.trim(),budget=parseAmount(document.getElementById("budget").value),start=document.getElementById("startDate").value,end=document.getElementById("endDate").value;
   if(!budget||budget<=0||!start||!end||end<start){alert("Revisa presupuesto y fechas.");return}
-  state.plan={budget,start,end};save();document.getElementById("planDialog").close();render();
+  state.plan={budget,start,end,title};save();document.getElementById("planDialog").close();render();
 };
-document.getElementById("resetPlan").onclick=()=>{if(confirm("¿Restablecer el plan y borrar todos los gastos?")){state={expenses:[],plan:{budget:0,start:null,end:null}};save();document.getElementById("planDialog").close();render()}};
+document.getElementById("resetPlan").onclick=()=>{if(confirm("¿Restablecer el plan y borrar todos los gastos?")){state={expenses:[],plan:{budget:0,start:null,end:null,title:""}};save();document.getElementById("planDialog").close();render()}};
 document.getElementById("exportBtn").onclick=()=>{
   const rows=[["Fecha","Categoría","Comentario","Localización","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[dateEs(e.date),e.concept,e.comment,e.location||"",e.amount.toFixed(2)])];
   const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\r\n");
