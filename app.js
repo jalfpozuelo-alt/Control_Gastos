@@ -70,20 +70,7 @@ function openCategories(){
     b.innerHTML=`<span class="emoji">${emojis[concept]}</span><span class="name">${concept}</span><span class="value">${money(sum)}</span><span class="arrow">›</span>`;
     b.onclick=()=>showCategory(concept);box.appendChild(b);
   });
-  renderCategoryChart(totals);
   document.getElementById("categoryDialog").showModal();
-}
-function renderCategoryChart(totals){
-  const chart=document.getElementById("categoryChart");chart.innerHTML="";
-  const max=Math.max(...totals.map(x=>x.sum),0);
-  if(!max){chart.innerHTML='<div class="empty" style="padding:10px">Todavía no hay gastos para mostrar.</div>';return}
-  totals.forEach(({concept,sum})=>{
-    if(sum<=0)return;
-    const row=document.createElement("div");row.className="chart-row";
-    const pct=Math.max(2,sum/max*100);
-    row.innerHTML=`<span class="chart-label">${emojis[concept]} ${concept}</span><span class="chart-track"><span class="chart-bar" style="width:${pct}%"></span></span><span class="chart-value">${money(sum)}</span>`;
-    chart.appendChild(row);
-  });
 }
 function renderExpenses(){
   const box=document.getElementById("expenses"),empty=document.getElementById("empty");box.innerHTML="";
@@ -107,7 +94,7 @@ function enableSwipeDelete(row,e){
 }
 function openExpense(e=null){
   editingId=e?.id||null;document.getElementById("expenseDialogTitle").textContent=e?"Editar gasto":"Registrar gasto";
-  document.getElementById("concept").value=e?.concept||"Desayuno";document.getElementById("amount").value=e?String(e.amount).replace(".",","):"";
+  document.getElementById("concept").value=e?.concept||"";document.getElementById("amount").value=e?String(e.amount).replace(".",","):"";
   document.getElementById("comment").value=e?.comment||"";document.getElementById("expenseDate").value=e?.date||isoDate();
   if(state.plan.start)document.getElementById("expenseDate").min=state.plan.start;if(state.plan.end)document.getElementById("expenseDate").max=state.plan.end;
   document.getElementById("expenseDialog").showModal();

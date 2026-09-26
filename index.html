@@ -54,8 +54,8 @@
 
 <dialog id="expenseDialog"><form method="dialog" id="expenseForm">
 <h2 id="expenseDialogTitle">Registrar gasto</h2>
-<label>Categoría<select id="concept">
-<option>Desayuno</option><option>Comida</option><option>Cena</option><option>Dormir</option><option>Supermercado</option><option>Otros</option>
+<label>Categoría<select id="concept" required>
+<option value="" disabled selected>Elegir</option><option>Desayuno</option><option>Comida</option><option>Cena</option><option>Dormir</option><option>Supermercado</option><option>Otros</option>
 </select></label>
 <label>Importe (€)<input id="amount" inputmode="decimal" required></label>
 <label>Comentario<input id="comment"></label>
@@ -74,7 +74,6 @@
 <dialog id="categoryDialog">
   <div>
     <h2>Gastos por categoría</h2>
-    <div id="categoryChart" class="category-chart"></div>
     <div id="categorySummaryRows" class="category-modal-list"></div>
     <button class="primary close-cat" data-close="categoryDialog">Cerrar</button>
   </div>
