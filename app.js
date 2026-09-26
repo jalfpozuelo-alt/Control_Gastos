@@ -170,7 +170,20 @@ function showCategory(c){
   document.getElementById("categoryTitle").textContent=`${emojis[c]}  ${c}`;
   const box=document.getElementById("categoryRows");box.innerHTML="";
   if(!rows.length)box.innerHTML='<div class="empty">No hay gastos en esta categoría.</div>';
-  rows.forEach(e=>{const r=document.createElement("div");r.className="cat-row";const details=[`Fecha: ${dateEs(e.date)}`,`Importe: ${money(e.amount)}`];if(e.comment)details.push(`Comentario: ${escapeHtml(e.comment)}`);if(e.location)details.push(`Localización: ${escapeHtml(e.location)}`);r.innerHTML=`<div class="cat-detail cat-detail-full">${details.map(x=>`<div>${x}</div>`).join("")}</div>`;box.appendChild(r)});
+  rows.forEach(e=>{
+    const r=document.createElement("div");
+    r.className="cat-card";
+    const comment=e.comment?escapeHtml(e.comment):"";
+    const location=e.location?escapeHtml(e.location):"";
+    r.innerHTML=`
+      <div class="cat-card-top">
+        <span class="cat-card-date">${dateEs(e.date)}</span>
+        <strong class="cat-card-amount">${money(e.amount)}</strong>
+      </div>
+      <div class="cat-card-line cat-card-comment">${comment||"Sin comentario"}</div>
+      <div class="cat-card-line cat-card-location">${location?`<span class="cat-pin">⌖</span>${location}`:""}</div>`;
+    box.appendChild(r);
+  });
   document.getElementById("categoryDialog").close();document.getElementById("categoryDetailDialog").showModal();
 }
 function openPlan(){
