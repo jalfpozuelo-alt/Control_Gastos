@@ -204,6 +204,14 @@ const contextHelpSets={
     {target:"#startDate",emoji:"📅",title:"Fechas",text:"Indica desde qué día hasta qué día dura el control. El presupuesto diario se calcula con esas fechas."},
     {target:".categories-config",emoji:"🏷️",title:"Categorías de este control",text:"Aquí puedes cambiar el nombre, elegir el emoji, añadir categorías o eliminar las que todavía no tengan gastos."},
     {target:"#addCategoryBtn",emoji:"➕",title:"Añadir categoría",text:"Crea una categoría nueva. Después puedes cambiar su nombre y su emoji directamente en la lista."}
+  ],
+  categories:[
+    {target:"#categorySummaryRows",emoji:"📊",title:"Tus categorías",text:"Aquí ves cuánto llevas gastado en cada categoría, ordenado de mayor a menor gasto."},
+    {target:"#categorySummaryRows",emoji:"👆",title:"Entra en el detalle",text:"Toca una categoría para ver sus movimientos, con fecha, importe, comentario y localización cuando exista."}
+  ],
+  categoryDetail:[
+    {target:"#categoryRows",emoji:"🔎",title:"Detalle de la categoría",text:"Aquí aparecen todos los gastos de esta categoría, del más reciente al más antiguo."},
+    {target:"#categoryBackBtn",emoji:"↩️",title:"Volver",text:"Pulsa aquí para regresar al resumen de gastos por categoría."}
   ]
 };
 let contextHelpKind=null,contextHelpIndex=0;
@@ -227,9 +235,12 @@ function positionContextHelp(){
 function renderContextHelp(){
   closeContextHelp();
   const steps=contextHelpSets[contextHelpKind];if(!steps)return;
+  const host={expense:"expenseDialog",plan:"planDialog",categories:"categoryDialog",categoryDetail:"categoryDetailDialog"}[contextHelpKind];
+  const hostDialog=document.getElementById(host);
+  if(!hostDialog)return;
   const layer=document.createElement("div");layer.className="dialog-context-help";
   layer.innerHTML=`<div class="context-help-spotlight"></div><div class="context-help-arrow">➜</div><div class="context-help-card"><div class="help-kicker"><span class="context-help-emoji">✨</span> AYUDA · <span class="context-help-step">1</span>/<span class="context-help-total">${steps.length}</span></div><h3 class="context-help-title"></h3><p class="context-help-text"></p><div class="help-actions"><button type="button" class="secondary context-help-close">Salir</button><button type="button" class="primary context-help-next">Siguiente</button></div></div>`;
-  document.body.appendChild(layer);
+  hostDialog.appendChild(layer);
   const update=()=>{const step=steps[contextHelpIndex];layer.querySelector(".context-help-emoji").textContent=step.emoji;layer.querySelector(".context-help-step").textContent=String(contextHelpIndex+1);layer.querySelector(".context-help-title").textContent=step.title;layer.querySelector(".context-help-text").textContent=step.text;layer.querySelector(".context-help-next").textContent=contextHelpIndex===steps.length-1?"Terminar":"Siguiente";requestAnimationFrame(positionContextHelp)};
   layer.querySelector(".context-help-close").onclick=closeContextHelp;
   layer.querySelector(".context-help-next").onclick=()=>{if(contextHelpIndex>=steps.length-1){closeContextHelp();return}contextHelpIndex++;update()};
@@ -271,7 +282,10 @@ document.getElementById("helpSkip").onclick=closeHelp;
 document.getElementById("helpBtn").onclick=()=>startHelp(true);
 document.getElementById("expenseHelpBtn").onclick=()=>startContextHelp("expense");
 document.getElementById("planHelpBtn").onclick=()=>startContextHelp("plan");
+document.getElementById("categoryHelpBtn").onclick=()=>startContextHelp("categories");
+document.getElementById("categoryDetailHelpBtn").onclick=()=>startContextHelp("categoryDetail");
 window.addEventListener("resize",()=>{if(document.querySelector(".dialog-context-help"))positionContextHelp()});
+["expenseDialog","planDialog","categoryDialog","categoryDetailDialog"].forEach(id=>document.getElementById(id).addEventListener("close",closeContextHelp));
 window.addEventListener("resize",()=>{if(!document.getElementById("helpOverlay").hidden)positionHelpCard(helpTargetElement(helpSteps[helpIndex]))});
 window.addEventListener("load",()=>{if(!localStorage.getItem(HELP_KEY))setTimeout(()=>startHelp(false),450)});
 

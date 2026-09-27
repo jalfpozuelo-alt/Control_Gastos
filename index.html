@@ -87,7 +87,7 @@
 
 <dialog id="categoryDialog">
   <div>
-    <h2>Gastos por categoría</h2>
+    <div class="dialog-title-row"><h2>Gastos por categoría</h2><button type="button" class="dialog-help-btn" id="categoryHelpBtn" aria-label="Ayuda sobre gastos por categoría">?</button></div>
     <div id="categorySummaryRows" class="category-modal-list"></div>
     <button class="primary close-cat" data-close="categoryDialog">Cerrar</button>
   </div>
@@ -95,7 +95,7 @@
 
 <dialog id="categoryDetailDialog">
   <div>
-    <h2 id="categoryTitle"></h2>
+    <div class="dialog-title-row"><h2 id="categoryTitle"></h2><button type="button" class="dialog-help-btn" id="categoryDetailHelpBtn" aria-label="Ayuda sobre el detalle de la categoría">?</button></div>
     <div id="categoryRows" class="category-detail-list"></div>
     <button id="categoryBackBtn" class="primary close-cat">Volver</button>
   </div>
