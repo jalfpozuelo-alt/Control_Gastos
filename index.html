@@ -53,7 +53,7 @@
 <button id="newExpenseBtn" class="new-expense" aria-label="Añadir gasto"><span>＋</span> NUEVO GASTO</button>
 
 <dialog id="expenseDialog"><form method="dialog" id="expenseForm">
-<h2 id="expenseDialogTitle" tabindex="-1">Registrar gasto</h2>
+<div class="dialog-title-row"><h2 id="expenseDialogTitle" tabindex="-1">Registrar gasto</h2><button type="button" class="dialog-help-btn" id="expenseHelpBtn" aria-label="Ayuda para registrar un gasto">?</button></div>
 <label>Categoría<div class="select-wrap"><select id="concept" required>
 <option>Desayuno</option><option>Comida</option><option>Cena</option><option>Dormir</option><option>Supermercado</option><option>Otros</option>
 </select><span id="conceptPlaceholder" class="select-placeholder">Elegir</span></div></label>
@@ -65,7 +65,7 @@
 </form></dialog>
 
 <dialog id="planDialog"><form method="dialog" id="planForm">
-<h2>Control de gastos</h2>
+<div class="dialog-title-row"><h2>Control de gastos</h2><button type="button" class="dialog-help-btn" id="planHelpBtn" aria-label="Ayuda para configurar el control">?</button></div>
 <label>Título del control<input id="planTitleInput" type="text" placeholder="Ej.: Camino del Norte" style="text-transform:uppercase" autocomplete="off"></label>
 <label>Tipo de control<select id="planType">
 <option value="camino">Camino de Santiago</option>

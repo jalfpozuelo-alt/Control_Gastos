@@ -178,15 +178,64 @@ document.getElementById("resetPlan").onclick=()=>{if(confirm("¿Restablecer el p
 document.getElementById("exportBtn").onclick=()=>{const rows=[["Título del control","Tipo de control","Fecha","Categoría","Comentario","Localización","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[state.plan.title||"",document.getElementById("planType")?.selectedOptions?.[0]?.textContent||state.plan.type,dateEs(e.date),e.concept,e.comment,e.location||"",e.amount.toFixed(2)])];const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);const safeTitle=(state.plan.title||"control_gastos").replace(/[^A-Z0-9ÁÉÍÓÚÜÑ _-]/gi,"").trim().replace(/\s+/g,"_")||"control_gastos";a.download=`${safeTitle}.csv`;a.click();URL.revokeObjectURL(a.href)};
 
 const HELP_KEY="control-gastos-help-v2";
+const CONTEXT_HELP_KEY="control-gastos-context-v1";
 const helpSteps=[
   {target:".plan-card",emoji:"👀",title:"Tu resumen diario",text:"Aquí verás cuánto puedes gastar hoy, lo que te queda y cómo vas respecto a tu presupuesto."},
-  {target:"#planBtn",emoji:"⚙️",title:"Configura tu control",text:"Desde aquí creas o modificas tu presupuesto, eliges el tipo de control y personalizas sus categorías. El tutorial te enseñará estas opciones cuando las necesites."},
-  {target:"#newExpenseBtn",emoji:"💸",title:"Añade un gasto",text:"Pulsa aquí para registrar un gasto. Solo aparecerán las categorías que tengas configuradas para este control."},
+  {target:"#planBtn",emoji:"⚙️",title:"Configura tu control",text:"Desde aquí creas o modificas tu presupuesto, eliges el tipo de control y personalizas sus categorías. Dentro de esta pantalla tienes una ayuda específica con el botón ?.",},
+  {target:"#newExpenseBtn",emoji:"💸",title:"Añade un gasto",text:"Pulsa aquí para registrar un gasto. Solo aparecerán las categorías que tengas configuradas para este control. Dentro de la pantalla también encontrarás una ayuda paso a paso.",},
   {target:"#categoriesBtn",emoji:"📊",title:"Consulta por categorías",text:"Aquí puedes ver cuánto llevas gastado en cada categoría y entrar en el detalle de sus movimientos."},
   {target:"#exportBtn",emoji:"📥",title:"Descarga tus datos",text:"Con esta flecha puedes exportar todos tus movimientos a un archivo CSV para guardarlos o abrirlos en Excel."},
   {target:"#helpBtn",emoji:"💡",title:"La ayuda siempre está aquí",text:"Si algún día necesitas recordar cómo funciona algo, toca este botón y podrás volver a hacer este recorrido."},
   {target:".daily-budget-card",emoji:"🎯",title:"Y ya está",text:"Tu presupuesto diario se recalcula con lo que queda y los días restantes. Ahora ya puedes empezar a controlar tus gastos.",final:true}
 ];
+
+const contextHelpSets={
+  expense:[
+    {target:"#concept",emoji:"🏷️",title:"Categoría",text:"Elige aquí el tipo de gasto. Solo aparecen las categorías que tengas configuradas en este control."},
+    {target:"#amount",emoji:"💶",title:"Importe",text:"Introduce cuánto has pagado. Puedes escribir la cantidad con coma decimal."},
+    {target:"#comment",emoji:"📝",title:"Comentario",text:"Es opcional. Úsalo para añadir un detalle que quieras recordar."},
+    {target:"#location",emoji:"📍",title:"Localización",text:"Puedes escribirla a mano o usar el botón ⌖ para obtenerla mediante GPS. La localización es opcional."},
+    {target:"#expenseDate",emoji:"📅",title:"Fecha",text:"Indica el día al que corresponde el gasto. Por defecto se usa la fecha de hoy."}
+  ],
+  plan:[
+    {target:"#planTitleInput",emoji:"✏️",title:"Título",text:"Ponle un nombre a tu control. Se guardará en mayúsculas para identificarlo fácilmente."},
+    {target:"#planType",emoji:"🧭",title:"Tipo de control",text:"Elige Camino, Viaje, Vacaciones, Gastos del mes o Personalizado. El tipo determina las categorías iniciales."},
+    {target:"#budget",emoji:"💰",title:"Presupuesto total",text:"Introduce el dinero total disponible para todo el periodo."},
+    {target:"#startDate",emoji:"📅",title:"Fechas",text:"Indica desde qué día hasta qué día dura el control. El presupuesto diario se calcula con esas fechas."},
+    {target:".categories-config",emoji:"🏷️",title:"Categorías de este control",text:"Aquí puedes cambiar el nombre, elegir el emoji, añadir categorías o eliminar las que todavía no tengan gastos."},
+    {target:"#addCategoryBtn",emoji:"➕",title:"Añadir categoría",text:"Crea una categoría nueva. Después puedes cambiar su nombre y su emoji directamente en la lista."}
+  ]
+};
+let contextHelpKind=null,contextHelpIndex=0;
+function closeContextHelp(){
+  const layer=document.querySelector(".dialog-context-help");
+  if(layer)layer.remove();
+  document.body.classList.remove("help-open");
+}
+function positionContextHelp(){
+  const layer=document.querySelector(".dialog-context-help"),card=layer?.querySelector(".context-help-card"),spot=layer?.querySelector(".context-help-spotlight"),arrow=layer?.querySelector(".context-help-arrow");
+  if(!layer||!card||!spot)return;
+  const steps=contextHelpSets[contextHelpKind],step=steps[contextHelpIndex],el=document.querySelector(step.target);if(!el)return;
+  const r=el.getBoundingClientRect(),pad=5;
+  spot.style.left=`${r.left-pad}px`;spot.style.top=`${r.top-pad}px`;spot.style.width=`${r.width+pad*2}px`;spot.style.height=`${r.height+pad*2}px`;
+  const cr=card.getBoundingClientRect(),gap=10;
+  let top=r.bottom+gap,left=Math.max(10,Math.min(window.innerWidth-cr.width-10,r.left));
+  if(top+cr.height>window.innerHeight-10)top=Math.max(10,r.top-cr.height-gap);
+  card.style.left=`${left}px`;card.style.top=`${top}px`;
+  if(arrow){const ax=left+cr.width/2,ay=top<r.top?top+cr.height:top;const ex=r.left+r.width/2,ey=top<r.top?r.top:r.bottom;arrow.style.left=`${ex-15}px`;arrow.style.top=`${(ey+ay)/2-15}px`;arrow.style.transform=`rotate(${Math.atan2(ey-ay,ex-ax)*180/Math.PI}deg)`;}
+}
+function renderContextHelp(){
+  closeContextHelp();
+  const steps=contextHelpSets[contextHelpKind];if(!steps)return;
+  const layer=document.createElement("div");layer.className="dialog-context-help";
+  layer.innerHTML=`<div class="context-help-spotlight"></div><div class="context-help-arrow">➜</div><div class="context-help-card"><div class="help-kicker"><span class="context-help-emoji">✨</span> AYUDA · <span class="context-help-step">1</span>/<span class="context-help-total">${steps.length}</span></div><h3 class="context-help-title"></h3><p class="context-help-text"></p><div class="help-actions"><button type="button" class="secondary context-help-close">Salir</button><button type="button" class="primary context-help-next">Siguiente</button></div></div>`;
+  document.body.appendChild(layer);
+  const update=()=>{const step=steps[contextHelpIndex];layer.querySelector(".context-help-emoji").textContent=step.emoji;layer.querySelector(".context-help-step").textContent=String(contextHelpIndex+1);layer.querySelector(".context-help-title").textContent=step.title;layer.querySelector(".context-help-text").textContent=step.text;layer.querySelector(".context-help-next").textContent=contextHelpIndex===steps.length-1?"Terminar":"Siguiente";requestAnimationFrame(positionContextHelp)};
+  layer.querySelector(".context-help-close").onclick=closeContextHelp;
+  layer.querySelector(".context-help-next").onclick=()=>{if(contextHelpIndex>=steps.length-1){closeContextHelp();return}contextHelpIndex++;update()};
+  update();
+}
+function startContextHelp(kind){contextHelpKind=kind;contextHelpIndex=0;renderContextHelp()}
 let helpIndex=0;
 function helpTargetElement(step){return document.querySelector(step.target)}
 function positionHelpCard(el){
@@ -220,6 +269,9 @@ function closeHelp(){document.getElementById("helpOverlay").hidden=true;document
 document.getElementById("helpNext").onclick=()=>{if(helpIndex>=helpSteps.length-1){closeHelp();return}helpIndex++;renderHelpStep()};
 document.getElementById("helpSkip").onclick=closeHelp;
 document.getElementById("helpBtn").onclick=()=>startHelp(true);
+document.getElementById("expenseHelpBtn").onclick=()=>startContextHelp("expense");
+document.getElementById("planHelpBtn").onclick=()=>startContextHelp("plan");
+window.addEventListener("resize",()=>{if(document.querySelector(".dialog-context-help"))positionContextHelp()});
 window.addEventListener("resize",()=>{if(!document.getElementById("helpOverlay").hidden)positionHelpCard(helpTargetElement(helpSteps[helpIndex]))});
 window.addEventListener("load",()=>{if(!localStorage.getItem(HELP_KEY))setTimeout(()=>startHelp(false),450)});
 
