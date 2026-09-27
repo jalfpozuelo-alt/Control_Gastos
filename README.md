@@ -1,13 +1,11 @@
-# Control Gastos v9
+# Control Gastos v2
 
-Cambios de esta versión:
-- Cabecera principal con título configurable y «Control de gastos».
-- Nuevo campo «Título del control» en la configuración del presupuesto.
-- Se mantiene intacta la tarjeta azul de «Presupuesto diario».
-- Campos de fecha normalizados para que tengan la misma altura visual que los demás campos.
-- Fechas Desde/Hasta más compactas en configuración.
-- Se mantienen la localización GPS, selector de categoría sin apertura automática y el resto de funciones de la versión anterior.
+Versión 2 de Control Gastos, basada en la versión 1 estable.
 
-- Título del control convertido siempre a mayúsculas.
-- Detalle por categoría muestra fecha, importe, comentario y localización cuando existen.
-- Exportación incluye el título del control como columna y usa el título para nombrar el archivo.
+Novedades:
+- Tipo de control: Camino de Santiago, Viaje, Vacaciones, Gastos del mes o Personalizado.
+- Cada control tiene sus propias categorías e iconos.
+- Categorías configurables: añadir, renombrar, cambiar icono y eliminar categorías sin uso.
+- Las categorías elegidas aparecen automáticamente en Nuevo gasto.
+- Se conserva toda la funcionalidad anterior, incluida la localización GPS, tarjetas de detalle, título en mayúsculas y exportación.
+- La estructura existente de localStorage se conserva para no perder los datos de la versión 1.
