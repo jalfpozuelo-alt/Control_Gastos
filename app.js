@@ -31,6 +31,12 @@ function ensurePlanCategories(plan){
   if(!cats.length)cats=DEFAULT_CATEGORIES.map(x=>({...x}));
   return {...plan,categories:cats,type:plan.type||"camino"};
 }
+function hasExpenses(){return state.expenses.length>0}
+function applyTypeTemplate(type){
+  state.plan.categories=type==="personalizado"?[]:presetCategories(type);
+  save();
+  renderPlanCategories();
+}
 function load(){
   try{
     const x=JSON.parse(localStorage.getItem(KEY)||"{}");
@@ -104,7 +110,13 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":
 function deleteExpense(e){if(confirm("¿Borrar este movimiento?")){state.expenses=state.expenses.filter(x=>x.id!==e.id);save();render()}}
 function enableSwipeDelete(row,e){let startX=0,startY=0,dx=0,tracking=false;const reveal=88;row.addEventListener("touchstart",ev=>{if(!ev.touches.length)return;startX=ev.touches[0].clientX;startY=ev.touches[0].clientY;dx=0;tracking=true;row.classList.add("swiping")},{passive:true});row.addEventListener("touchmove",ev=>{if(!tracking||!ev.touches.length)return;const x=ev.touches[0].clientX,y=ev.touches[0].clientY,diffX=x-startX,diffY=y-startY;if(Math.abs(diffY)>Math.abs(diffX)+8){tracking=false;row.classList.remove("swiping");row.style.transform="translateX(0)";return}dx=Math.max(-reveal,Math.min(0,diffX));if(diffX<0)row.style.transform=`translateX(${dx}px)`},{passive:true});row.addEventListener("touchend",()=>{if(!tracking)return;tracking=false;row.classList.remove("swiping");row.style.transform=dx<-40?`translateX(-${reveal}px)`:"translateX(0)";dx=0});row.addEventListener("touchcancel",()=>{tracking=false;row.classList.remove("swiping");row.style.transform="translateX(0)"})}
 function renderConceptOptions(selected=""){
-  const select=document.getElementById("concept");select.innerHTML="<option value=\"\" disabled>Elegir</option>";state.plan.categories.forEach(c=>{const o=document.createElement("option");o.value=c.name;o.textContent=`${c.icon} ${c.name}`;select.appendChild(o)});select.value=selected||"";document.getElementById("conceptPlaceholder").hidden=!!selected;select.required=true;
+  const select=document.getElementById("concept");
+  select.innerHTML="";
+  state.plan.categories.forEach(c=>{const o=document.createElement("option");o.value=c.name;o.textContent=`${c.icon} ${c.name}`;select.appendChild(o)});
+  if(selected && state.plan.categories.some(c=>c.name===selected)) select.value=selected;
+  else select.selectedIndex=-1;
+  document.getElementById("conceptPlaceholder").hidden=!!select.value;
+  select.required=true;
 }
 function openExpense(e=null){
   editingId=e?.id||null;document.getElementById("expenseDialogTitle").textContent=e?"Editar gasto":"Registrar gasto";renderConceptOptions(e?.concept||"");
@@ -134,17 +146,36 @@ function renameCategory(i,value){const name=value.trim();if(!name){renderPlanCat
 function removeCategory(i){const c=state.plan.categories[i];const used=state.expenses.some(e=>e.concept===c.name);if(used){alert("No puedes eliminar una categoría que ya tiene gastos registrados. Puedes cambiarle el nombre o conservarla.");return}if(state.plan.categories.length<=1){alert("Debe quedar al menos una categoría.");return}if(confirm(`¿Eliminar la categoría «${c.name}»?`)){state.plan.categories.splice(i,1);save();renderPlanCategories();renderConceptOptions();render()}}
 function addCategory(){const base="Nueva categoría";let n=1,name=base;while(state.plan.categories.some(c=>c.name.toLowerCase()===name.toLowerCase()))name=`${base} ${++n}`;state.plan.categories.push({name,icon:"📌"});save();renderPlanCategories();const last=document.querySelector("#planCategories .plan-category-row:last-child .cat-name");last?.focus();last?.select()}
 function openPlan(){
-  document.getElementById("planTitleInput").value=state.plan.title||"";document.getElementById("planType").value=state.plan.type||"camino";document.getElementById("budget").value=state.plan.budget?String(state.plan.budget).replace(".",","):"";document.getElementById("startDate").value=state.plan.start||"";document.getElementById("endDate").value=state.plan.end||"";renderPlanCategories();document.getElementById("planDialog").showModal();
+  document.getElementById("planTitleInput").value=state.plan.title||"";
+  const type=document.getElementById("planType");type.value=state.plan.type||"camino";
+  document.getElementById("budget").value=state.plan.budget?String(state.plan.budget).replace(".",","):"";
+  document.getElementById("startDate").value=state.plan.start||"";
+  document.getElementById("endDate").value=state.plan.end||"";
+  const locked=hasExpenses();
+  type.disabled=locked;
+  document.getElementById("budget").disabled=locked;
+  document.getElementById("startDate").disabled=locked;
+  document.getElementById("endDate").disabled=locked;
+  document.getElementById("planLockedNote")?.remove();
+  if(locked){const note=document.createElement("p");note.id="planLockedNote";note.className="help lock-note";note.textContent="El tipo de control, el presupuesto y las fechas están bloqueados porque ya hay movimientos. Puedes seguir modificando las categorías.";document.querySelector("#planForm .categories-config").before(note)}
+  renderPlanCategories();document.getElementById("planDialog").showModal();
 }
 document.getElementById("concept").addEventListener("change",()=>{document.getElementById("conceptPlaceholder").hidden=true});
 document.getElementById("locateBtn").onclick=locateExpense;
 document.getElementById("expenseDialog").addEventListener("close",()=>{stopLocationWatch();const b=document.getElementById("locateBtn");b.classList.remove("active");b.textContent="⌖"});
 document.getElementById("newExpenseBtn").onclick=()=>{if(!state.plan.start||!state.plan.end){alert("Primero configura el presupuesto y las fechas.");openPlan();return}openExpense()};
-document.getElementById("planBtn").onclick=openPlan;document.getElementById("categoriesBtn").onclick=openCategories;document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).close());document.getElementById("categoryBackBtn").onclick=()=>{document.getElementById("categoryDetailDialog").close();openCategories()};
+document.getElementById("planBtn").onclick=openPlan;
+document.getElementById("planType").addEventListener("change",ev=>{if(hasExpenses()){ev.target.value=state.plan.type||"camino";return}applyTypeTemplate(ev.target.value)});document.getElementById("categoriesBtn").onclick=openCategories;document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).close());document.getElementById("categoryBackBtn").onclick=()=>{document.getElementById("categoryDetailDialog").close();openCategories()};
 document.getElementById("addCategoryBtn").onclick=addCategory;
-document.getElementById("restoreCategories").onclick=()=>{const type=document.getElementById("planType").value;if(confirm(`¿Restaurar las categorías de «${document.getElementById("planType").selectedOptions[0].textContent}»? Esto sustituirá las categorías actuales del control.`)){state.plan.categories=presetCategories(type);save();renderPlanCategories()}};
+document.getElementById("restoreCategories").onclick=()=>{const type=document.getElementById("planType").value;if(type==="personalizado"){alert("Personalizado no tiene categorías predefinidas. Añádelas manualmente.");return}if(confirm(`¿Restaurar las categorías de «${document.getElementById("planType").selectedOptions[0].textContent}»? Esto sustituirá las categorías actuales del control.`)){applyTypeTemplate(type)}};
 document.getElementById("expenseForm").onsubmit=e=>{e.preventDefault();const amount=parseAmount(document.getElementById("amount").value),date=document.getElementById("expenseDate").value,concept=document.getElementById("concept").value;if(!amount||amount<=0||!date||!concept){if(!concept)alert("Elige una categoría antes de guardar.");return}if((state.plan.start&&date<state.plan.start)||(state.plan.end&&date>state.plan.end)){alert("La fecha está fuera del periodo.");return}const item={id:editingId||crypto.randomUUID(),concept,comment:document.getElementById("comment").value.trim(),location:document.getElementById("location").value.trim(),amount,date};if(editingId)state.expenses=state.expenses.map(x=>x.id===editingId?item:x);else state.expenses.push(item);save();document.getElementById("expenseDialog").close();render()};
-document.getElementById("planForm").onsubmit=e=>{e.preventDefault();const title=document.getElementById("planTitleInput").value.trim().toUpperCase(),type=document.getElementById("planType").value,budget=parseAmount(document.getElementById("budget").value),start=document.getElementById("startDate").value,end=document.getElementById("endDate").value;if(!budget||budget<=0||!start||!end||end<start){alert("Revisa presupuesto y fechas.");return}state.plan={...state.plan,budget,start,end,title,type,categories:normalizeCategories(state.plan.categories)};save();document.getElementById("planDialog").close();render()};
+document.getElementById("planForm").onsubmit=e=>{e.preventDefault();
+  const title=document.getElementById("planTitleInput").value.trim().toUpperCase(),type=document.getElementById("planType").value;
+  const budget=parseAmount(document.getElementById("budget").value),start=document.getElementById("startDate").value,end=document.getElementById("endDate").value;
+  if(!budget||budget<=0||!start||!end||end<start){alert("Revisa presupuesto y fechas.");return}
+  if(hasExpenses() && type!==state.plan.type){alert("No puedes cambiar el tipo de control porque ya hay movimientos. Usa «Restablecer» para empezar un control nuevo.");return}
+  state.plan={...state.plan,budget,start,end,title,type,categories:normalizeCategories(state.plan.categories)};
+  save();document.getElementById("planDialog").close();render()};
 document.getElementById("resetPlan").onclick=()=>{if(confirm("¿Restablecer el plan y borrar todos los gastos?")){state={expenses:[],plan:ensurePlanCategories({budget:0,start:null,end:null,title:"",type:"camino",categories:[]})};save();document.getElementById("planDialog").close();render()}};
 document.getElementById("exportBtn").onclick=()=>{const rows=[["Título del control","Tipo de control","Fecha","Categoría","Comentario","Localización","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[state.plan.title||"",document.getElementById("planType")?.selectedOptions?.[0]?.textContent||state.plan.type,dateEs(e.date),e.concept,e.comment,e.location||"",e.amount.toFixed(2)])];const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);const safeTitle=(state.plan.title||"control_gastos").replace(/[^A-Z0-9ÁÉÍÓÚÜÑ _-]/gi,"").trim().replace(/\s+/g,"_")||"control_gastos";a.download=`${safeTitle}.csv`;a.click();URL.revokeObjectURL(a.href)};
 render();
