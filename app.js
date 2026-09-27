@@ -155,7 +155,6 @@ function openPlan(){
   type.disabled=locked;
   
   document.getElementById("planLockedNote")?.remove();
-  if(locked){const note=document.createElement("p");note.id="planLockedNote";note.className="help lock-note";note.textContent="El tipo de control queda fijado cuando ya hay movimientos. El presupuesto, las fechas, el título y las categorías se pueden seguir modificando.";document.querySelector("#planForm .categories-config").before(note)}
   renderPlanCategories();document.getElementById("planDialog").showModal();
 }
 document.getElementById("concept").addEventListener("change",()=>{document.getElementById("conceptPlaceholder").hidden=true});
@@ -247,7 +246,7 @@ function renderContextHelp(){
   update();
 }
 function startContextHelp(kind){contextHelpKind=kind;contextHelpIndex=0;renderContextHelp()}
-let helpIndex=0;
+let helpIndex=0,helpIsInitial=false;
 function helpTargetElement(step){return document.querySelector(step.target)}
 function positionHelpCard(el){
   const card=document.getElementById("helpCard"),spot=document.getElementById("helpSpotlight"),arrow=document.getElementById("helpArrow");
@@ -272,11 +271,15 @@ function renderHelpStep(){
   requestAnimationFrame(()=>{const el=helpTargetElement(step);if(el){el.scrollIntoView({block:"nearest",inline:"nearest"});requestAnimationFrame(()=>positionHelpCard(el))}});
 }
 function startHelp(markSeen=true){
-  helpIndex=0;document.getElementById("helpOverlay").hidden=false;document.body.classList.add("help-open");
+  helpIndex=0;helpIsInitial=!markSeen;document.getElementById("helpOverlay").hidden=false;document.body.classList.add("help-open");
   if(markSeen)localStorage.setItem(HELP_KEY,"1");
   renderHelpStep();
 }
-function closeHelp(){document.getElementById("helpOverlay").hidden=true;document.body.classList.remove("help-open");document.getElementById("helpArrow").hidden=true;}
+function closeHelp(){
+  if(helpIsInitial)localStorage.setItem(HELP_KEY,"1");
+  helpIsInitial=false;
+  document.getElementById("helpOverlay").hidden=true;document.body.classList.remove("help-open");document.getElementById("helpArrow").hidden=true;
+}
 document.getElementById("helpNext").onclick=()=>{if(helpIndex>=helpSteps.length-1){closeHelp();return}helpIndex++;renderHelpStep()};
 document.getElementById("helpSkip").onclick=closeHelp;
 document.getElementById("helpBtn").onclick=()=>startHelp(true);
