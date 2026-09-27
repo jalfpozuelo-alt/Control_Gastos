@@ -153,9 +153,9 @@ function openPlan(){
   document.getElementById("endDate").value=state.plan.end||"";
   const locked=hasExpenses();
   type.disabled=locked;
-  document.getElementById("budget").disabled=locked;
-  document.getElementById("startDate").disabled=locked;
-  document.getElementById("endDate").disabled=locked;
+  document.getElementById("budget").disabled=false;
+  document.getElementById("startDate").disabled=false;
+  document.getElementById("endDate").disabled=false;
   document.getElementById("planLockedNote")?.remove();
   if(locked){const note=document.createElement("p");note.id="planLockedNote";note.className="help lock-note";note.textContent="El tipo de control, el presupuesto y las fechas están bloqueados porque ya hay movimientos. Puedes seguir modificando las categorías.";document.querySelector("#planForm .categories-config").before(note)}
   renderPlanCategories();document.getElementById("planDialog").showModal();
