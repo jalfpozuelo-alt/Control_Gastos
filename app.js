@@ -153,11 +153,9 @@ function openPlan(){
   document.getElementById("endDate").value=state.plan.end||"";
   const locked=hasExpenses();
   type.disabled=locked;
-  document.getElementById("budget").disabled=locked;
-  document.getElementById("startDate").disabled=locked;
-  document.getElementById("endDate").disabled=locked;
+  
   document.getElementById("planLockedNote")?.remove();
-  if(locked){const note=document.createElement("p");note.id="planLockedNote";note.className="help lock-note";note.textContent="El tipo de control, el presupuesto y las fechas están bloqueados porque ya hay movimientos. Puedes seguir modificando las categorías.";document.querySelector("#planForm .categories-config").before(note)}
+  if(locked){const note=document.createElement("p");note.id="planLockedNote";note.className="help lock-note";note.textContent="El tipo de control queda fijado cuando ya hay movimientos. El presupuesto, las fechas, el título y las categorías se pueden seguir modificando.";document.querySelector("#planForm .categories-config").before(note)}
   renderPlanCategories();document.getElementById("planDialog").showModal();
 }
 document.getElementById("concept").addEventListener("change",()=>{document.getElementById("conceptPlaceholder").hidden=true});
@@ -179,43 +177,46 @@ document.getElementById("planForm").onsubmit=e=>{e.preventDefault();
 document.getElementById("resetPlan").onclick=()=>{if(confirm("¿Restablecer el plan y borrar todos los gastos?")){state={expenses:[],plan:ensurePlanCategories({budget:0,start:null,end:null,title:"",type:"camino",categories:[]})};save();document.getElementById("planDialog").close();render()}};
 document.getElementById("exportBtn").onclick=()=>{const rows=[["Título del control","Tipo de control","Fecha","Categoría","Comentario","Localización","Importe (€)"],...state.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>[state.plan.title||"",document.getElementById("planType")?.selectedOptions?.[0]?.textContent||state.plan.type,dateEs(e.date),e.concept,e.comment,e.location||"",e.amount.toFixed(2)])];const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);const safeTitle=(state.plan.title||"control_gastos").replace(/[^A-Z0-9ÁÉÍÓÚÜÑ _-]/gi,"").trim().replace(/\s+/g,"_")||"control_gastos";a.download=`${safeTitle}.csv`;a.click();URL.revokeObjectURL(a.href)};
 
-const HELP_KEY="control-gastos-help-v1";
+const HELP_KEY="control-gastos-help-v2";
 const helpSteps=[
-  {target:".plan-card",title:"Tu resumen diario",text:"Aquí verás cuánto puedes gastar hoy, lo que te queda y cómo vas respecto a tu presupuesto."},
-  {target:"#planBtn",title:"Configura tu control",text:"Pulsa aquí para crear o modificar el presupuesto, las fechas, el tipo de control y sus categorías.",action:()=>openPlan()},
-  {target:"#planType",title:"Elige el tipo de control",text:"Cada tipo trae una plantilla de categorías pensada para ese uso. Personalizado empieza en blanco para que tú las crees."},
-  {target:"#budget",title:"Define tu presupuesto",text:"Introduce el importe total y el periodo. El presupuesto diario se recalcula automáticamente con lo que queda y los días restantes."},
-  {target:"#planCategories",title:"Adapta las categorías",text:"Puedes añadir categorías, cambiarles el nombre o el icono y eliminar las que todavía no tengan gastos."},
-  {target:"#newExpenseBtn",title:"Añade tus gastos",text:"Cuando tengas configurado el control, usa este botón para registrar un gasto. Solo aparecerán las categorías de tu control.",action:()=>document.getElementById("planDialog")?.open&&document.getElementById("planDialog").close()},
-  {target:"#categoriesBtn",title:"Consulta por categorías",text:"Aquí puedes ver cuánto has gastado en cada categoría y entrar en el detalle de sus movimientos.",final:true}
+  {target:".plan-card",emoji:"👀",title:"Tu resumen diario",text:"Aquí verás cuánto puedes gastar hoy, lo que te queda y cómo vas respecto a tu presupuesto."},
+  {target:"#planBtn",emoji:"⚙️",title:"Configura tu control",text:"Desde aquí creas o modificas tu presupuesto, eliges el tipo de control y personalizas sus categorías. El tutorial te enseñará estas opciones cuando las necesites."},
+  {target:"#newExpenseBtn",emoji:"💸",title:"Añade un gasto",text:"Pulsa aquí para registrar un gasto. Solo aparecerán las categorías que tengas configuradas para este control."},
+  {target:"#categoriesBtn",emoji:"📊",title:"Consulta por categorías",text:"Aquí puedes ver cuánto llevas gastado en cada categoría y entrar en el detalle de sus movimientos."},
+  {target:"#exportBtn",emoji:"📥",title:"Descarga tus datos",text:"Con esta flecha puedes exportar todos tus movimientos a un archivo CSV para guardarlos o abrirlos en Excel."},
+  {target:"#helpBtn",emoji:"💡",title:"La ayuda siempre está aquí",text:"Si algún día necesitas recordar cómo funciona algo, toca este botón y podrás volver a hacer este recorrido."},
+  {target:".daily-budget-card",emoji:"🎯",title:"Y ya está",text:"Tu presupuesto diario se recalcula con lo que queda y los días restantes. Ahora ya puedes empezar a controlar tus gastos.",final:true}
 ];
 let helpIndex=0;
 function helpTargetElement(step){return document.querySelector(step.target)}
 function positionHelpCard(el){
-  const card=document.getElementById("helpCard"),spot=document.getElementById("helpSpotlight");
+  const card=document.getElementById("helpCard"),spot=document.getElementById("helpSpotlight"),arrow=document.getElementById("helpArrow");
   if(!el)return;
-  const r=el.getBoundingClientRect(), pad=6;
+  const r=el.getBoundingClientRect(),pad=7;
   spot.style.left=`${Math.max(4,r.left-pad)}px`;spot.style.top=`${Math.max(4,r.top-pad)}px`;spot.style.width=`${r.width+pad*2}px`;spot.style.height=`${r.height+pad*2}px`;
-  const cardH=card.offsetHeight||170, gap=14;
+  const cardH=card.offsetHeight||185,gap=18;
   let top=r.bottom+gap;
   if(top+cardH>window.innerHeight-10)top=r.top-cardH-gap;
   if(top<10)top=10;
   const left=Math.min(Math.max(10,r.left),window.innerWidth-card.offsetWidth-10);
   card.style.left=`${left}px`;card.style.top=`${top}px`;
+  const cr=card.getBoundingClientRect(),tx=r.left+r.width/2,ty=r.top+r.height/2,cx=cr.left+cr.width/2,cy=cr.top+cr.height/2;
+  const fromX=tx>=cx?cr.right-12:cr.left+12, fromY=ty>=cy?cr.bottom-16:cr.top+16;
+  const dx=tx-fromX,dy=ty-fromY,angle=Math.atan2(dy,dx)*180/Math.PI;
+  arrow.style.left=`${fromX-15}px`;arrow.style.top=`${fromY-15}px`;arrow.style.transform=`rotate(${angle}deg)`;arrow.hidden=false;
 }
 function renderHelpStep(){
-  const step=helpSteps[helpIndex], overlay=document.getElementById("helpOverlay"), title=document.getElementById("helpTitle"),text=document.getElementById("helpText"),next=document.getElementById("helpNext");
+  const step=helpSteps[helpIndex],overlay=document.getElementById("helpOverlay"),title=document.getElementById("helpTitle"),text=document.getElementById("helpText"),next=document.getElementById("helpNext"),emoji=document.getElementById("helpEmoji");
   document.getElementById("helpStep").textContent=String(helpIndex+1);document.getElementById("helpTotal").textContent=String(helpSteps.length);
-  title.textContent=step.title;text.textContent=step.text;next.textContent=step.final?"Terminar":"Siguiente";
-  if(step.action)step.action();
-  requestAnimationFrame(()=>{const el=helpTargetElement(step);if(el){el.scrollIntoView({block:"nearest",inline:"nearest"});requestAnimationFrame(()=>positionHelpCard(el))} });
+  title.textContent=step.title;text.textContent=step.text;next.textContent=step.final?"Terminar":"Siguiente";emoji.textContent=step.emoji||"✨";
+  requestAnimationFrame(()=>{const el=helpTargetElement(step);if(el){el.scrollIntoView({block:"nearest",inline:"nearest"});requestAnimationFrame(()=>positionHelpCard(el))}});
 }
 function startHelp(markSeen=true){
   helpIndex=0;document.getElementById("helpOverlay").hidden=false;document.body.classList.add("help-open");
   if(markSeen)localStorage.setItem(HELP_KEY,"1");
   renderHelpStep();
 }
-function closeHelp(){document.getElementById("helpOverlay").hidden=true;document.body.classList.remove("help-open");document.getElementById("planDialog")?.open&&document.getElementById("planDialog").close();}
+function closeHelp(){document.getElementById("helpOverlay").hidden=true;document.body.classList.remove("help-open");document.getElementById("helpArrow").hidden=true;}
 document.getElementById("helpNext").onclick=()=>{if(helpIndex>=helpSteps.length-1){closeHelp();return}helpIndex++;renderHelpStep()};
 document.getElementById("helpSkip").onclick=closeHelp;
 document.getElementById("helpBtn").onclick=()=>startHelp(true);
