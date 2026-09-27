@@ -21,7 +21,7 @@
       <div class="title">Control de gastos</div>
     </div>
   </div>
-  <button id="exportBtn" class="icon-btn export" aria-label="Exportar gastos">⇩</button>
+  <div class="top-actions"><button id="exportBtn" class="icon-btn export" aria-label="Exportar gastos">⇩</button><button id="helpBtn" class="icon-btn help-icon" aria-label="Ayuda">?</button></div>
 </header>
 
 <main>
@@ -101,6 +101,19 @@
   </div>
 </dialog>
 
+
+<div id="helpOverlay" class="help-overlay" hidden>
+  <div id="helpSpotlight" class="help-spotlight"></div>
+  <div id="helpCard" class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="help-kicker">AYUDA · <span id="helpStep">1</span>/<span id="helpTotal">7</span></div>
+    <h3 id="helpTitle"></h3>
+    <p id="helpText"></p>
+    <div class="help-actions">
+      <button type="button" id="helpSkip" class="secondary">Salir</button>
+      <button type="button" id="helpNext" class="primary">Siguiente</button>
+    </div>
+  </div>
+</div>
 <script src="app.js"></script>
 <script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script>
 </div>
