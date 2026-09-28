@@ -13,5 +13,13 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "description": "Controla presupuestos y gastos de forma sencilla, desde cualquier dispositivo.",
+  "id": "./",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
   ]
 }

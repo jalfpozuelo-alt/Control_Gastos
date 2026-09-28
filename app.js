@@ -293,3 +293,162 @@ window.addEventListener("resize",()=>{if(!document.getElementById("helpOverlay")
 window.addEventListener("load",()=>{if(!localStorage.getItem(HELP_KEY))setTimeout(()=>startHelp(false),450)});
 
 render();
+
+
+/* V2.6 · Instalación guiada de la PWA */
+const INSTALL_SEEN_KEY="control-gastos-install-v1";
+let deferredInstallPrompt=null;
+
+function isStandaloneApp(){
+  return window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.matchMedia?.("(display-mode: window-controls-overlay)")?.matches ||
+    navigator.standalone === true;
+}
+function installPlatform(){
+  const ua=navigator.userAgent||"";
+  const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  const android=/Android/i.test(ua);
+  const mac=/Macintosh|Mac OS X/i.test(ua)&&!ios;
+  const windows=/Windows/i.test(ua);
+  const linux=/Linux/i.test(ua)&&!android;
+  const chrome=/CriOS|Chrome/i.test(ua)&&!/Edg|OPR|SamsungBrowser/i.test(ua);
+  const edge=/EdgiOS|EdgA|Edg\//i.test(ua);
+  const firefox=/FxiOS|Firefox/i.test(ua);
+  const samsung=/SamsungBrowser/i.test(ua);
+  const safari=/Safari/i.test(ua)&&!chrome&&!edge&&!firefox&&!samsung&&!/CriOS/i.test(ua);
+  if(ios)return "ios";
+  if(android && samsung)return "android-samsung";
+  if(android && chrome)return "android-chrome";
+  if(android && edge)return "android-edge";
+  if(android && firefox)return "android-firefox";
+  if(android)return "android";
+  if(windows && (chrome||edge))return "desktop-chromium";
+  if(windows && firefox)return "desktop-firefox";
+  if(mac && safari)return "mac-safari";
+  if(mac && (chrome||edge))return "desktop-chromium";
+  if(linux && (chrome||edge))return "desktop-chromium";
+  if(linux && firefox)return "desktop-firefox";
+  return "desktop-other";
+}
+function installInstructions(kind){
+  const common={intro:"Añádela a la pantalla de inicio o instálala para abrirla como una aplicación, sin la interfaz normal del navegador.",steps:[]};
+  switch(kind){
+    case "ios":
+      common.intro="En tu iPhone o iPad puedes convertir esta web en una app desde el menú Compartir.";
+      common.steps=[
+        ["1","Pulsa","el botón Compartir de Safari."],
+        ["2","Añade a Inicio","Busca «Añadir a Inicio» en las acciones."],
+        ["3","Activa","«Abrir como app web» y pulsa «Añadir»."]
+      ]; break;
+    case "android-chrome":
+      common.intro="Chrome puede instalar esta aplicación directamente cuando la PWA es instalable.";
+      common.steps=[
+        ["1","Abre el menú","Pulsa ⋮ en Chrome."],
+        ["2","Instala","Elige «Instalar aplicación» o «Añadir a pantalla de inicio»."],
+        ["3","Confirma","Acepta la instalación y aparecerá su icono."]
+      ]; break;
+    case "android-samsung":
+      common.intro="Samsung Internet puede añadir esta aplicación al inicio del teléfono.";
+      common.steps=[
+        ["1","Abre el menú","Pulsa ☰ en Samsung Internet."],
+        ["2","Añade","Elige «Añadir página a» y después «Pantalla de inicio»."],
+        ["3","Confirma","Acepta el nombre y añade el icono."]
+      ]; break;
+    case "android-edge":
+      common.intro="Microsoft Edge puede ofrecer la instalación desde su menú.";
+      common.steps=[
+        ["1","Abre el menú","Pulsa ⋯ en Edge."],
+        ["2","Instala","Busca «Instalar aplicación» o «Añadir a teléfono»."],
+        ["3","Confirma","Acepta la instalación."]
+      ]; break;
+    case "android-firefox":
+      common.intro="Firefox puede crear un acceso directo al sitio en Android.";
+      common.steps=[
+        ["1","Abre el menú","Pulsa ⋮ en Firefox."],
+        ["2","Añade","Busca «Añadir a la pantalla de inicio»."],
+        ["3","Confirma","Añade el acceso directo."]
+      ]; break;
+    case "desktop-chromium":
+      common.intro="Este navegador puede instalar la aplicación como ventana independiente.";
+      common.steps=[
+        ["1","Busca el icono","Mira el icono de instalación en la barra de direcciones o abre el menú del navegador."],
+        ["2","Instala","Elige «Instalar Control de Gastos»."],
+        ["3","Confirma","La aplicación quedará disponible como acceso independiente."]
+      ]; break;
+    case "mac-safari":
+      common.intro="Safari en macOS permite convertir una web en una app desde el menú Archivo.";
+      common.steps=[
+        ["1","Abre Archivo","En Safari, pulsa «Archivo»."],
+        ["2","Añade al Dock","Elige «Añadir al Dock…»."],
+        ["3","Confirma","Acepta el nombre y guarda la aplicación."]
+      ]; break;
+    case "desktop-firefox":
+      common.intro="Firefox de escritorio no ofrece la instalación PWA de la misma forma que Chromium.";
+      common.steps=[
+        ["1","Guarda el acceso","Añade Control de Gastos a marcadores o accesos directos."],
+        ["2","Acceso rápido","Colócalo donde te resulte más cómodo."],
+        ["3","Consejo","Para una instalación como app, usa Chrome o Edge en este equipo."]
+      ]; break;
+    default:
+      common.intro="Tu navegador puede guardar esta web como acceso directo o instalarla si ofrece esa función.";
+      common.steps=[
+        ["1","Abre el menú","Busca opciones como «Instalar», «Añadir a inicio» o «Añadir al Dock»."],
+        ["2","Añade","Confirma la creación del acceso."],
+        ["3","Listo","Usa el icono creado para abrir Control de Gastos."]
+      ];
+  }
+  return common;
+}
+function renderInstallDialog(){
+  const kind=installPlatform(), data=installInstructions(kind);
+  document.getElementById("installIntro").textContent=data.intro;
+  const box=document.getElementById("installSteps");box.innerHTML="";
+  data.steps.forEach(([n,title,text])=>{
+    const row=document.createElement("div");row.className="install-step";
+    row.innerHTML=`<span class="num">${n}</span><div><strong>${title}</strong>${escapeHtml(text)}</div>`;
+    box.appendChild(row);
+  });
+  const nativeBtn=document.getElementById("installNativeBtn");
+  nativeBtn.hidden=!deferredInstallPrompt;
+  nativeBtn.textContent="Instalar aplicación";
+}
+function openInstallDialog(force=false){
+  if(isStandaloneApp())return;
+  renderInstallDialog();
+  const d=document.getElementById("installDialog");
+  if(d.open)return;
+  d.showModal();
+  if(!force)localStorage.setItem(INSTALL_SEEN_KEY,"1");
+}
+async function triggerNativeInstall(){
+  if(!deferredInstallPrompt){renderInstallDialog();return}
+  const prompt=deferredInstallPrompt;
+  deferredInstallPrompt=null;
+  const result=await prompt.prompt();
+  localStorage.setItem(INSTALL_SEEN_KEY,"1");
+  if(result?.outcome==="accepted")document.getElementById("installDialog").close();
+  document.getElementById("installNativeBtn").hidden=true;
+}
+window.addEventListener("beforeinstallprompt",event=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  const btn=document.getElementById("installBtn");
+  if(btn){btn.hidden=isStandaloneApp();}
+  if(!isStandaloneApp() && !localStorage.getItem(INSTALL_SEEN_KEY)){
+    setTimeout(()=>openInstallDialog(false),700);
+  }
+});
+window.addEventListener("appinstalled",()=>{
+  deferredInstallPrompt=null;
+  localStorage.setItem(INSTALL_SEEN_KEY,"1");
+  document.getElementById("installBtn").hidden=true;
+});
+document.getElementById("installNativeBtn").onclick=triggerNativeInstall;
+document.getElementById("installCloseBtn").onclick=()=>document.getElementById("installDialog").close();
+document.getElementById("installBtn").onclick=()=>openInstallDialog(true);
+window.addEventListener("load",()=>{
+  if(isStandaloneApp()){document.getElementById("installBtn").hidden=true;return;}
+  document.getElementById("installBtn").hidden=false;
+  if(!localStorage.getItem(INSTALL_SEEN_KEY))setTimeout(()=>openInstallDialog(false),850);
+});
+

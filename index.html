@@ -21,7 +21,7 @@
       <div class="title">Control de gastos</div>
     </div>
   </div>
-  <div class="top-actions"><button id="exportBtn" class="icon-btn export" aria-label="Exportar gastos">⇩</button><button id="helpBtn" class="icon-btn help-icon" aria-label="Ayuda">?</button></div>
+  <div class="top-actions"><button id="exportBtn" class="icon-btn export" aria-label="Exportar gastos">⇩</button><button id="installBtn" class="icon-btn install-icon" aria-label="Instalar aplicación" hidden>⌂</button><button id="helpBtn" class="icon-btn help-icon" aria-label="Ayuda">?</button></div>
 </header>
 
 <main>
@@ -100,6 +100,20 @@
   </div>
 </dialog>
 
+
+
+<dialog id="installDialog" class="install-dialog">
+  <div class="install-panel">
+    <div class="install-hero">📱</div>
+    <h2>Instala Control de Gastos</h2>
+    <p id="installIntro" class="install-intro">Añádela a la pantalla de inicio para usarla como una aplicación.</p>
+    <div id="installSteps" class="install-steps"></div>
+    <div class="install-actions">
+      <button type="button" id="installNativeBtn" class="primary" hidden>Instalar aplicación</button>
+      <button type="button" id="installCloseBtn" class="secondary">Ahora no</button>
+    </div>
+  </div>
+</dialog>
 
 <div id="helpOverlay" class="help-overlay" hidden>
   <div id="helpSpotlight" class="help-spotlight"></div>
