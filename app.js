@@ -432,8 +432,6 @@ async function triggerNativeInstall(){
 window.addEventListener("beforeinstallprompt",event=>{
   event.preventDefault();
   deferredInstallPrompt=event;
-  const btn=document.getElementById("installBtn");
-  if(btn){btn.hidden=isStandaloneApp();}
   if(!isStandaloneApp() && !localStorage.getItem(INSTALL_SEEN_KEY)){
     setTimeout(()=>openInstallDialog(false),700);
   }
@@ -441,14 +439,11 @@ window.addEventListener("beforeinstallprompt",event=>{
 window.addEventListener("appinstalled",()=>{
   deferredInstallPrompt=null;
   localStorage.setItem(INSTALL_SEEN_KEY,"1");
-  document.getElementById("installBtn").hidden=true;
 });
 document.getElementById("installNativeBtn").onclick=triggerNativeInstall;
 document.getElementById("installCloseBtn").onclick=()=>document.getElementById("installDialog").close();
-document.getElementById("installBtn").onclick=()=>openInstallDialog(true);
 window.addEventListener("load",()=>{
   if(isStandaloneApp()){document.getElementById("installBtn").hidden=true;return;}
-  document.getElementById("installBtn").hidden=false;
   if(!localStorage.getItem(INSTALL_SEEN_KEY))setTimeout(()=>openInstallDialog(false),850);
 });
 

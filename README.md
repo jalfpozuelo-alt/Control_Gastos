@@ -11,7 +11,7 @@ Novedades:
 - La estructura existente de localStorage se conserva para no perder los datos de la versión 1.
 
 
-## V2.6 — Instalación guiada de la app web
+## V2.6.1 — Instalación guiada de la app web
 
 - Detecta automáticamente si la aplicación ya se está ejecutando como PWA instalada.
 - En navegadores Chromium compatibles, ofrece el diálogo nativo de instalación mediante `beforeinstallprompt`.
