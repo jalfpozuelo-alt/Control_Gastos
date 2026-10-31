@@ -4,12 +4,12 @@ Aplicación web estática y PWA para controlar un presupuesto dentro de un perio
 
 ## Publicar en GitHub Pages
 
-1. Sube **todo el contenido de esta carpeta** a la raíz de un repositorio de GitHub.
+1. Sube **el contenido interno de esta carpeta** a la raíz del repositorio de GitHub; no subas la carpeta como un nivel adicional si quieres abrir la aplicación desde la URL principal.
 2. En el repositorio, abre **Settings → Pages**.
 3. Selecciona **Deploy from a branch**, la rama `main` y la carpeta `/(root)`.
 4. Guarda. GitHub mostrará la URL pública cuando termine el despliegue.
 
-Al abrir esa URL en un navegador compatible se podrá instalar como aplicación web.
+Al abrir esa URL en un navegador compatible se podrá instalar como aplicación web. Si ya tenías una instalación anterior, desinstálala y vuelve a instalarla después del despliegue para actualizar la caché de la PWA.
 
 ## Archivos incluidos
 

@@ -15,7 +15,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div><p id="planName" class="overline">MI CONTROL</p><h1>Control de gastos</h1></div>
-      <div class="header-actions"><button id="exportBtn" class="icon-button" aria-label="Exportar datos">⇩</button><button id="settingsBtn" class="icon-button" aria-label="Configurar control">⚙</button></div>
+      <div class="header-actions"><button id="helpBtn" class="icon-button" aria-label="Ver ayuda">?</button><button id="exportBtn" class="icon-button" aria-label="Exportar datos">⇩</button><button id="settingsBtn" class="icon-button" aria-label="Configurar control">⚙</button></div>
     </header>
     <main>
       <section class="hero-card" aria-labelledby="budgetLabel">
@@ -29,12 +29,9 @@
         <article class="metric"><span>MEDIA</span><strong id="average">0,00 €</strong></article>
         <article class="metric"><span>TOTAL</span><strong id="total">0,00 €</strong></article>
       </section>
-      <section class="insight-card">
-        <div class="section-heading"><div><span class="eyebrow">DISTRIBUCIÓN</span><h2>Por categoría</h2></div><button id="categoriesBtn" class="text-button">Ver todo <span>›</span></button></div>
-        <div id="categoryPreview" class="category-preview"><p class="empty-copy">Añade gastos para ver dónde se va tu presupuesto.</p></div>
-      </section>
+      <button id="categoriesBtn" class="categories-button" type="button"><span>📊</span> Gastos por categoría <span>›</span></button>
       <section class="movement-section">
-        <div class="section-heading"><div><span class="eyebrow">REGISTRO</span><h2>Movimientos</h2></div><span id="movementCount" class="count"></span></div>
+        <div class="section-heading"><div><span class="eyebrow">PERIODO</span><h2>Movimientos</h2></div><span id="movementCount" class="count"></span></div>
         <div id="movements" class="movements"></div>
         <div id="emptyMovements" class="empty-state"><span>✦</span><p>Aún no hay movimientos<br><small>Registra el primero cuando empiece el periodo.</small></p></div>
       </section>
@@ -42,9 +39,10 @@
     <button id="addBtn" class="add-button"><span>＋</span> Añadir gasto</button>
   </div>
 
-  <dialog id="expenseDialog"><form id="expenseForm" method="dialog"><div class="dialog-head"><div><span class="eyebrow">NUEVO MOVIMIENTO</span><h2>Registrar gasto</h2></div><button type="button" class="close" data-close="expenseDialog" aria-label="Cerrar">×</button></div><label>Categoría<select id="category" required></select></label><label>Importe (€)<input id="amount" inputmode="decimal" placeholder="0,00" required></label><label>Comentario <span class="optional">opcional</span><input id="note" maxlength="100" placeholder="Ej.: menú del día"></label><label>Fecha<input id="expenseDate" type="date" required></label><div class="dialog-actions"><button type="button" class="secondary" data-close="expenseDialog">Cancelar</button><button class="primary">Guardar gasto</button></div></form></dialog>
+  <dialog id="expenseDialog"><form id="expenseForm" method="dialog"><div class="dialog-head"><div><span class="eyebrow">NUEVO MOVIMIENTO</span><h2>Registrar gasto</h2></div><button type="button" class="close" data-close="expenseDialog" aria-label="Cerrar">×</button></div><div class="date-grid"><label>Categoría<select id="category" required></select></label><label>Fecha<input id="expenseDate" type="date" required></label></div><label>Importe (€)<input id="amount" inputmode="decimal" placeholder="0,00" required></label><label>Localización <span class="optional">opcional</span><div class="location-input"><input id="location" maxlength="80" placeholder="Ciudad o lugar"><button id="locateBtn" type="button" aria-label="Usar mi ubicación">⌖</button></div><small id="locationStatus" class="location-status" aria-live="polite"></small></label><label>Comentario <span class="optional">opcional</span><input id="note" maxlength="100" placeholder="Ej.: menú del día"></label><div class="dialog-actions"><button type="button" class="secondary" data-close="expenseDialog">Cancelar</button><button class="primary">Guardar gasto</button></div></form></dialog>
   <dialog id="settingsDialog"><form id="settingsForm" method="dialog"><div class="dialog-head"><div><span class="eyebrow">CONFIGURACIÓN</span><h2>Tu periodo</h2></div><button type="button" class="close" data-close="settingsDialog" aria-label="Cerrar">×</button></div><label>Nombre del control <span class="optional">opcional</span><input id="title" maxlength="36" placeholder="Ej.: Viaje a Lisboa"></label><label>Presupuesto total (€)<input id="budget" inputmode="decimal" placeholder="0,00" required></label><div class="date-grid"><label>Desde<input id="startDate" type="date" required></label><label>Hasta<input id="endDate" type="date" required></label></div><label>Categorías <span class="optional">separadas por comas</span><input id="categories" placeholder="Comida, Transporte, Alojamiento"></label><div class="dialog-actions"><button type="button" id="resetBtn" class="danger">Restablecer</button><button class="primary">Guardar cambios</button></div></form></dialog>
-  <dialog id="categoriesDialog"><div><div class="dialog-head"><div><span class="eyebrow">DESGLOSE DEL PERIODO</span><h2>Gastos por categoría</h2></div><button type="button" class="close" data-close="categoriesDialog" aria-label="Cerrar">×</button></div><div id="categoryList"></div></div></dialog>
+  <dialog id="categoryDialog"><div><div class="dialog-head"><div><span class="eyebrow">DESGLOSE DEL PERIODO</span><h2>Gastos por categoría</h2></div><button type="button" class="close" data-close="categoryDialog" aria-label="Cerrar">×</button></div><div id="categoryList"></div></div></dialog>
+  <dialog id="helpDialog"><div><div class="dialog-head"><div><span class="eyebrow">AYUDA</span><h2 id="helpTitle">Bienvenido</h2></div><button type="button" class="close" data-close="helpDialog" aria-label="Cerrar">×</button></div><div class="help-body"><span id="helpEmoji" class="help-emoji">👋</span><p id="helpText"></p></div><div class="dialog-actions"><button id="helpSkip" type="button" class="secondary">Salir</button><button id="helpNext" type="button" class="primary">Siguiente</button></div></div></dialog>
   <template id="movementTemplate"><article class="movement"><div class="movement-icon"></div><div class="movement-main"><strong></strong><span></span></div><div class="movement-side"><b></b><button class="delete" aria-label="Borrar movimiento">×</button></div></article></template>
   <script src="app.js"></script>
 </body>
