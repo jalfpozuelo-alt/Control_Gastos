@@ -1,28 +1,22 @@
-# Control de gastos · propuesta visual
+# Control Gastos v2
 
-Aplicación web estática y PWA para controlar un presupuesto dentro de un periodo cerrado. No requiere servidor, compilación ni dependencias.
+Versión 2 de Control Gastos, basada en la versión 1 estable.
 
-## Publicar en GitHub Pages
+Novedades:
+- Tipo de control: Camino de Santiago, Viaje, Vacaciones, Gastos del mes o Personalizado.
+- Cada control tiene sus propias categorías e iconos.
+- Categorías configurables: añadir, renombrar, cambiar icono y eliminar categorías sin uso.
+- Las categorías elegidas aparecen automáticamente en Nuevo gasto.
+- Se conserva toda la funcionalidad anterior, incluida la localización GPS, tarjetas de detalle, título en mayúsculas y exportación.
+- La estructura existente de localStorage se conserva para no perder los datos de la versión 1.
 
-1. Sube **el contenido interno de esta carpeta** a la raíz del repositorio de GitHub; no subas la carpeta como un nivel adicional si quieres abrir la aplicación desde la URL principal.
-2. En el repositorio, abre **Settings → Pages**.
-3. Selecciona **Deploy from a branch**, la rama `main` y la carpeta `/(root)`.
-4. Guarda. GitHub mostrará la URL pública cuando termine el despliegue.
 
-Al abrir esa URL en un navegador compatible se podrá instalar como aplicación web. Si ya tenías una instalación anterior, desinstálala y vuelve a instalarla después del despliegue para actualizar la caché de la PWA.
+## V2.6.1 — Instalación guiada de la app web
 
-## Archivos incluidos
-
-- `index.html`: estructura de la interfaz.
-- `styles.css`: diseño adaptable para móvil y escritorio.
-- `app.js`: lógica, datos locales, cálculos y exportación CSV.
-- `manifest.webmanifest`, `sw.js`: instalación PWA y uso sin conexión.
-- `icon.svg`, `icon-192.png`, `icon-512.png`: iconos de la aplicación.
-
-## Datos y privacidad
-
-Los datos se guardan solamente en el navegador mediante `localStorage`; no se envían a ningún servidor. El CSV exportado contiene únicamente los movimientos del periodo configurado.
-
-## Regla de cálculo
-
-Todos los indicadores usan exclusivamente los gastos cuya fecha cae entre el inicio y el final establecidos. Al terminar el periodo, la media diaria queda congelada y el presupuesto diario pasa a cero.
+- Detecta automáticamente si la aplicación ya se está ejecutando como PWA instalada.
+- En navegadores Chromium compatibles, ofrece el diálogo nativo de instalación mediante `beforeinstallprompt`.
+- En iPhone/iPad muestra una guía visual específica para añadir la web a Inicio y abrirla como app web.
+- En Android muestra instrucciones adaptadas al navegador.
+- En escritorio muestra las instrucciones correspondientes cuando el navegador permite instalar la PWA y, cuando no, una alternativa de acceso.
+- La guía se muestra una sola vez por dispositivo/navegador y queda disponible mediante el botón de instalación.
+- No modifica los datos de gastos ni la configuración existente.

@@ -1,49 +1,135 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#173e6d">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Control Gastos">
-  <title>Control de gastos</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#123b6d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Control Gastos">
+<title>Control Gastos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div><p id="planName" class="overline">MI CONTROL</p><h1>Control de gastos</h1></div>
-      <div class="header-actions"><button id="helpBtn" class="icon-button" aria-label="Ver ayuda">?</button><button id="exportBtn" class="icon-button" aria-label="Exportar datos">⇩</button><button id="settingsBtn" class="icon-button" aria-label="Configurar control">⚙</button></div>
-    </header>
-    <main>
-      <section class="hero-card" aria-labelledby="budgetLabel">
-        <div class="hero-head"><span id="budgetLabel">Disponible hoy</span><span id="pace" class="status">Configura el periodo</span></div>
-        <div class="hero-number"><strong id="dailyBudget">0,00 €</strong><span>/ día</span></div>
-        <div class="progress-track" aria-label="Progreso del presupuesto"><div id="progress"></div></div>
-        <div class="hero-footer"><span id="remaining">Sin presupuesto configurado</span><span id="periodInfo"></span></div>
-      </section>
-      <section class="metrics" aria-label="Resumen del periodo">
-        <article class="metric metric-primary"><span>HOY</span><strong id="today">0,00 €</strong></article>
-        <article class="metric"><span>MEDIA</span><strong id="average">0,00 €</strong></article>
-        <article class="metric"><span>TOTAL</span><strong id="total">0,00 €</strong></article>
-      </section>
-      <button id="categoriesBtn" class="categories-button" type="button"><span>📊</span> Gastos por categoría <span>›</span></button>
-      <section class="movement-section">
-        <div class="section-heading"><div><span class="eyebrow">PERIODO</span><h2>Movimientos</h2></div><span id="movementCount" class="count"></span></div>
-        <div id="movements" class="movements"></div>
-        <div id="emptyMovements" class="empty-state"><span>✦</span><p>Aún no hay movimientos<br><small>Registra el primero cuando empiece el periodo.</small></p></div>
-      </section>
-    </main>
-    <button id="addBtn" class="add-button"><span>＋</span> Añadir gasto</button>
+<div class="phone">
+<header class="topbar">
+  <div class="brand">
+    <button id="planBtn" class="icon-btn" aria-label="Configurar presupuesto">⚙︎</button>
+    <div>
+      <div id="planTitle" class="eyebrow"></div>
+      <div class="title">Control de gastos</div>
+    </div>
   </div>
+  <div class="top-actions"><button id="exportBtn" class="icon-btn export" aria-label="Exportar gastos">⇩</button><button id="helpBtn" class="icon-btn help-icon" aria-label="Ayuda">?</button></div>
+</header>
 
-  <dialog id="expenseDialog"><form id="expenseForm" method="dialog"><div class="dialog-head"><div><span class="eyebrow">NUEVO MOVIMIENTO</span><h2>Registrar gasto</h2></div><button type="button" class="close" data-close="expenseDialog" aria-label="Cerrar">×</button></div><div class="date-grid"><label>Categoría<select id="category" required></select></label><label>Fecha<input id="expenseDate" type="date" required></label></div><label>Importe (€)<input id="amount" inputmode="decimal" placeholder="0,00" required></label><label>Localización <span class="optional">opcional</span><div class="location-input"><input id="location" maxlength="80" placeholder="Ciudad o lugar"><button id="locateBtn" type="button" aria-label="Usar mi ubicación">⌖</button></div><small id="locationStatus" class="location-status" aria-live="polite"></small></label><label>Comentario <span class="optional">opcional</span><input id="note" maxlength="100" placeholder="Ej.: menú del día"></label><div class="dialog-actions"><button type="button" class="secondary" data-close="expenseDialog">Cancelar</button><button class="primary">Guardar gasto</button></div></form></dialog>
-  <dialog id="settingsDialog"><form id="settingsForm" method="dialog"><div class="dialog-head"><div><span class="eyebrow">CONFIGURACIÓN</span><h2>Tu periodo</h2></div><button type="button" class="close" data-close="settingsDialog" aria-label="Cerrar">×</button></div><label>Nombre del control <span class="optional">opcional</span><input id="title" maxlength="36" placeholder="Ej.: Viaje a Lisboa"></label><label>Presupuesto total (€)<input id="budget" inputmode="decimal" placeholder="0,00" required></label><div class="date-grid"><label>Desde<input id="startDate" type="date" required></label><label>Hasta<input id="endDate" type="date" required></label></div><label>Categorías <span class="optional">separadas por comas</span><input id="categories" placeholder="Comida, Transporte, Alojamiento"></label><div class="dialog-actions"><button type="button" id="resetBtn" class="danger">Restablecer</button><button class="primary">Guardar cambios</button></div></form></dialog>
-  <dialog id="categoryDialog"><div><div class="dialog-head"><div><span class="eyebrow">DESGLOSE DEL PERIODO</span><h2>Gastos por categoría</h2></div><button type="button" class="close" data-close="categoryDialog" aria-label="Cerrar">×</button></div><div id="categoryList"></div></div></dialog>
-  <dialog id="helpDialog"><div><div class="dialog-head"><div><span class="eyebrow">AYUDA</span><h2 id="helpTitle">Bienvenido</h2></div><button type="button" class="close" data-close="helpDialog" aria-label="Cerrar">×</button></div><div class="help-body"><span id="helpEmoji" class="help-emoji">👋</span><p id="helpText"></p></div><div class="dialog-actions"><button id="helpSkip" type="button" class="secondary">Salir</button><button id="helpNext" type="button" class="primary">Siguiente</button></div></div></dialog>
-  <template id="movementTemplate"><article class="movement"><div class="movement-icon"></div><div class="movement-main"><strong></strong><span></span></div><div class="movement-side"><b></b><button class="delete" aria-label="Borrar movimiento">×</button></div></article></template>
-  <script src="app.js"></script>
+<main>
+<section class="plan-card">
+  <div class="plan-title">Presupuesto diario</div>
+  <div class="plan-main">
+    <div><span id="dailyBudget" class="daily-budget">0,00 €</span><span class="muted"> / día</span></div>
+    <div id="pace" class="pace"><span class="pace-dot">●</span><span>En ritmo</span></div>
+  </div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div id="remaining" class="remaining">Te quedan 0,00 €</div>
+  <div id="budgetInfo" class="budget-info">Configura tu presupuesto y las fechas.</div>
+</section>
+
+<section class="quick">
+  <div id="todayStat" class="stat"><span>HOY</span><strong id="today">0,00 €</strong></div>
+  <div class="stat"><span>MEDIA / DÍA</span><strong id="average">0,00 €</strong></div>
+  <div class="stat"><span>TOTAL</span><strong id="total">0,00 €</strong></div>
+</section>
+
+<button id="categoriesBtn" class="categories-button" type="button"><span>📊</span><span>Gastos por categoría</span><span class="chevron">›</span></button>
+<section class="movement-section">
+  <div class="section-title list-heading">MOVIMIENTOS</div>
+  <div id="expenses" class="movement-list"></div>
+  <div id="empty" class="empty">Todavía no hay gastos.</div>
+</section>
+</main>
+
+<button id="newExpenseBtn" class="new-expense" aria-label="Añadir gasto"><span>＋</span> NUEVO GASTO</button>
+
+<dialog id="expenseDialog"><form method="dialog" id="expenseForm">
+<div class="dialog-title-row"><h2 id="expenseDialogTitle" tabindex="-1">Registrar gasto</h2><button type="button" class="dialog-help-btn" id="expenseHelpBtn" aria-label="Ayuda para registrar un gasto">?</button></div>
+<label>Categoría<div class="select-wrap"><select id="concept" required>
+<option>Desayuno</option><option>Comida</option><option>Cena</option><option>Dormir</option><option>Supermercado</option><option>Otros</option>
+</select><span id="conceptPlaceholder" class="select-placeholder">Elegir</span></div></label>
+<label>Importe (€)<input id="amount" inputmode="decimal" required></label>
+<label>Comentario<input id="comment"></label>
+<label>Localización<div class="location-wrap"><input id="location" autocomplete="address-level2" placeholder="Opcional"><button type="button" id="locateBtn" class="location-btn" aria-label="Obtener localización por GPS">⌖</button></div><div id="locationStatus" class="location-status" aria-live="polite"></div></label>
+<label>Fecha<input id="expenseDate" type="date" required></label>
+<div class="dialog-actions"><button type="button" class="secondary" data-close="expenseDialog">Cancelar</button><button class="primary">Guardar</button></div>
+</form></dialog>
+
+<dialog id="planDialog"><form method="dialog" id="planForm">
+<div class="dialog-title-row"><h2>Control de gastos</h2><button type="button" class="dialog-help-btn" id="planHelpBtn" aria-label="Ayuda para configurar el control">?</button></div>
+<label>Título del control<input id="planTitleInput" type="text" placeholder="Ej.: Camino del Norte" style="text-transform:uppercase" autocomplete="off"></label>
+<label>Tipo de control<select id="planType">
+<option value="camino">Camino de Santiago</option>
+<option value="viaje">Viaje</option>
+<option value="vacaciones">Vacaciones</option>
+<option value="mensual">Gastos del mes</option>
+<option value="personalizado">Personalizado</option>
+</select></label>
+<label>Presupuesto total (€)<input id="budget" inputmode="decimal" required></label>
+<div class="two-cols"><label>Desde<input id="startDate" type="date"></label><label>Hasta<input id="endDate" type="date"></label></div>
+<div class="categories-config">
+  <div class="categories-config-head"><span>Categorías de este control</span><button type="button" id="restoreCategories" class="mini-btn">Restaurar tipo</button></div>
+  <div id="planCategories" class="plan-categories"></div>
+  <button type="button" id="addCategoryBtn" class="add-category-btn">＋ Añadir categoría</button>
+</div>
+<div class="dialog-actions"><button type="button" class="secondary" data-close="planDialog">Cancelar</button><button type="button" id="resetPlan" class="danger">Restablecer</button><button class="primary">Guardar</button></div>
+</form></dialog>
+
+<dialog id="categoryDialog">
+  <div>
+    <div class="dialog-title-row"><h2>Gastos por categoría</h2><button type="button" class="dialog-help-btn" id="categoryHelpBtn" aria-label="Ayuda sobre gastos por categoría">?</button></div>
+    <div id="categorySummaryRows" class="category-modal-list"></div>
+    <button class="primary close-cat" data-close="categoryDialog">Cerrar</button>
+  </div>
+</dialog>
+
+<dialog id="categoryDetailDialog">
+  <div>
+    <div class="dialog-title-row"><h2 id="categoryTitle"></h2><button type="button" class="dialog-help-btn" id="categoryDetailHelpBtn" aria-label="Ayuda sobre el detalle de la categoría">?</button></div>
+    <div id="categoryRows" class="category-detail-list"></div>
+    <button id="categoryBackBtn" class="primary close-cat">Volver</button>
+  </div>
+</dialog>
+
+
+
+<dialog id="installDialog" class="install-dialog">
+  <div class="install-panel">
+    <div class="install-hero">📱</div>
+    <h2>Instala Control de Gastos</h2>
+    <p id="installIntro" class="install-intro">Añádela a la pantalla de inicio para usarla como una aplicación.</p>
+    <div id="installSteps" class="install-steps"></div>
+    <div class="install-actions">
+      <button type="button" id="installNativeBtn" class="primary" hidden>Instalar aplicación</button>
+      <button type="button" id="installCloseBtn" class="secondary">Ahora no</button>
+    </div>
+  </div>
+</dialog>
+
+<div id="helpOverlay" class="help-overlay" hidden>
+  <div id="helpSpotlight" class="help-spotlight"></div>
+  <div id="helpArrow" class="help-arrow" aria-hidden="true" hidden>➜</div>
+  <div id="helpCard" class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="help-kicker"><span id="helpEmoji">✨</span> AYUDA · <span id="helpStep">1</span>/<span id="helpTotal">7</span></div>
+    <h3 id="helpTitle"></h3>
+    <p id="helpText"></p>
+    <div class="help-actions">
+      <button type="button" id="helpSkip" class="secondary">Salir</button>
+      <button type="button" id="helpNext" class="primary">Siguiente</button>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script>
+</div>
 </body>
 </html>
